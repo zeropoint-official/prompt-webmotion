@@ -1,0 +1,212 @@
+You are given a task to integrate an existing React component in the codebase
+
+The codebase should support:
+- shadcn project structure
+- Tailwind CSS
+- Typescript
+
+If it doesn't, provide instructions on how to setup project via shadcn CLI, install Tailwind or Typescript.
+
+Determine the default path for components and styles.
+If default path for components is not /components/ui, provide instructions on why it's important to create this folder
+
+Copy-paste this component to /components/ui folder:
+```tsx
+process-section.tsx
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
+
+type Step = {
+  n: string;
+  eyebrow: string;
+  title: string;
+  body: string;
+  bullets: string[];
+  img: string;
+};
+
+const steps: Step[] = [
+  {
+    n: "01",
+    eyebrow: "Stage / Plan & Design",
+    title: "It starts on paper, not on site.",
+    body: "Before a single load arrives we survey the ground, model the structure, cost every line and pull the permits. A build that's planned properly is a build that finishes on time.",
+    bullets: ["Site survey & feasibility", "Drawings & permits", "Fixed-scope budget"],
+    img: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1200&q=80",
+  },
+  {
+    n: "02",
+    eyebrow: "Stage / Foundation & Structure",
+    title: "We get the bones right.",
+    body: "Excavation, footings, reinforced concrete frame. The part nobody sees is the part that decides whether everything above it lasts fifty years or fifteen.",
+    bullets: ["Excavation & groundworks", "Reinforced concrete frame", "Load-tested & inspected"],
+    img: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1200&q=80",
+  },
+  {
+    n: "03",
+    eyebrow: "Stage / Build & Finish",
+    title: "Where it becomes a place.",
+    body: "Envelope, services, joinery, finishes. Our own crews and trusted trades work to one programme, so the detailing is tight and the site stays clean to the day we hand it over.",
+    bullets: ["Envelope & cladding", "MEP & interiors", "Finishes & fit-out"],
+    img: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&q=80",
+  },
+  {
+    n: "04",
+    eyebrow: "Stage / Handover & Aftercare",
+    title: "Done means signed off.",
+    body: "Full snagging, certification and a documented warranty. We hand you keys, drawings and a number you can actually call if anything ever needs us back.",
+    bullets: ["Snagging & sign-off", "Certification & docs", "Warranty & aftercare"],
+    img: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1200&q=80",
+  },
+];
+
+export function ProcessSection() {
+  const [activeStep, setActiveStep] = useState(0);
+  const panelRefs = useRef<(HTMLElement | null)[]>([]);
+
+  useEffect(() => {
+    const observers = panelRefs.current.map((el, i) => {
+      if (!el) return null;
+      const obs = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) setActiveStep(i);
+        },
+        { threshold: 0.5 }
+      );
+      obs.observe(el);
+      return obs;
+    });
+    return () => observers.forEach((o) => o?.disconnect());
+  }, []);
+
+  return (
+    <section id="process" className="relative z-10 w-full bg-neutral-950 text-white">
+      {/* HEADER */}
+      <div className="mx-auto max-w-[1500px] px-6 pt-28 md:px-10 md:pt-40">
+        <div className="grid grid-cols-1 gap-10 md:grid-cols-12 md:gap-16">
+          <h2 className="font-sans text-[clamp(2.4rem,5.6vw,5rem)] font-medium leading-[0.98] tracking-[-0.045em] md:col-span-12">
+            <span className="bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">
+              A skeleton becomes a building
+            </span>
+            <br />
+            <span className="text-white/40">one disciplined </span>
+            <span className="bg-gradient-to-r from-amber-400 to-yellow-300 bg-clip-text text-transparent">stage at a time.</span>
+          </h2>
+          <div className="md:col-span-6 md:col-start-7">
+            <p className="mt-2 max-w-[58ch] text-[clamp(1rem,1.1vw,1.1rem)] font-light leading-[1.65] text-white/65">
+              From the first survey to the final certificate, every project moves through four controlled stages. Scroll to follow one structure from raw frame to finished handover.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* STICKY LAYOUT */}
+      <div className="relative mx-auto mt-20 max-w-[1500px] px-6 md:mt-28 md:px-10">
+        <div className="grid grid-cols-1 gap-10 md:grid-cols-12 md:gap-16">
+          {/* LEFT — scrolling panels */}
+          <div className="md:col-span-5">
+            {steps.map((p, i) => (
+              <article
+                key={p.n}
+                ref={(el) => { panelRefs.current[i] = el; }}
+                className="flex min-h-screen flex-col justify-center py-20"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="bg-gradient-to-br from-amber-400 to-yellow-300 bg-clip-text font-sans text-[1.4rem] font-medium leading-none text-transparent">
+                    {p.n}
+                  </span>
+                  <span className="text-[0.62rem] font-medium uppercase tracking-[0.28em] text-white/55">
+                    {p.eyebrow}
+                  </span>
+                </div>
+
+                <h3 className="mt-6 max-w-[16ch] font-sans text-[clamp(2rem,3.4vw,3.4rem)] font-medium leading-[0.96] tracking-[-0.035em] bg-gradient-to-r from-white to-white/70 bg-clip-text text-transparent">
+                  {p.title}
+                </h3>
+
+                <p className="mt-6 max-w-[44ch] text-[1rem] font-light leading-[1.7] text-white/65">
+                  {p.body}
+                </p>
+
+                <ul className="mt-8 space-y-3">
+                  {p.bullets.map((b) => (
+                    <li key={b} className="flex items-center gap-3 text-[0.85rem] tracking-[0.02em] text-white/70">
+                      <span className="h-px w-6 bg-gradient-to-r from-amber-400 to-yellow-300" />
+                      {b}
+                    </li>
+                  ))}
+                </ul>
+
+                {/* Mobile image */}
+                <div className="relative mt-10 aspect-video w-full overflow-hidden rounded-[1.25rem] border border-white/10 md:hidden">
+                  <Image src={p.img} alt="" fill className="object-cover" sizes="100vw" />
+                </div>
+              </article>
+            ))}
+          </div>
+
+          {/* RIGHT — sticky image */}
+          <div className="hidden md:col-span-7 md:block">
+            <div className="sticky top-0 flex h-screen items-center">
+              <div className="relative aspect-[5/4] max-h-[90vh] w-full overflow-hidden rounded-[1.5rem] border border-white/10 bg-black/40">
+                {steps.map((p, i) => (
+                  <div
+                    key={p.n}
+                    className="absolute inset-0 transition-opacity duration-700"
+                    style={{ opacity: activeStep === i ? 1 : 0, zIndex: activeStep === i ? 1 : 0 }}
+                  >
+                    <Image src={p.img} alt="" fill sizes="50vw" className="object-cover" priority={i === 0} />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent" />
+                    <div className="absolute bottom-5 left-5 flex items-center gap-2 text-[0.6rem] uppercase tracking-[0.28em] text-white/80">
+                      <span className="rounded-full border border-white/15 bg-black/45 px-2.5 py-1 backdrop-blur-md">
+                        {p.n}
+                      </span>
+                      {p.eyebrow.replace("Stage / ", "")}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* CLOSING LINE */}
+      <div className="mx-auto max-w-[1500px] px-6 pb-28 md:px-10 md:pb-40">
+        <div className="mx-auto mt-20 max-w-[46ch] border-t border-white/10 pt-10 text-center md:mt-32">
+          <p className="font-sans text-[clamp(1.3rem,2vw,1.9rem)] leading-[1.25] tracking-[-0.02em] bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">
+            No surprises, no shortcuts.{" "}
+            <span className="text-white/40">Just a building that was always going to work.</span>
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export default ProcessSection;
+```
+
+Install NPM dependencies:
+```bash
+(none beyond Next.js built-ins — uses native IntersectionObserver for sticky image switching)
+```
+
+Implementation Guidelines
+ 1. The sticky image on the right swaps based on which left panel is in the viewport (IntersectionObserver at 50% threshold)
+ 2. Each left panel needs `min-h-screen` so there is enough scroll distance between stages
+ 3. On mobile, the sticky column is hidden and each panel shows its image inline
+ 4. Questions to Ask
+ - What data/props will be passed to this component?
+ - Are there specific stage names, copy or bullet points to change?
+ - Replace Unsplash URLs with real project photography
+ - What is the expected responsive behavior?
+
+Steps to integrate
+ 0. Copy paste all the code above in the correct directories
+ 1. No extra npm packages required
+ 2. Fill image assets with Unsplash stock images you know exist
+ 3. Adjust amber gradient classes to match your brand colour
+

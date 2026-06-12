@@ -1,26 +1,163 @@
 @import "tailwindcss";
 
 :root {
+  /* ——— the violet void ——— */
+  --abyss: #08040f;
+  --abyss-2: #0d0718;
+  --raised: #130b22;
+  --frost: #f3eefc;
+  --frost-dim: #b0a3cc;
+  --frost-faint: #6f6390;
+  --orchid: #e26df8;
+  --fuchsia-core: #c026d3;
+  --violet-core: #8b5cf6;
+  --veil: rgba(196, 181, 253, 0.14);
+  --veil-soft: rgba(196, 181, 253, 0.07);
+
+  /* shadcn-style tokens used by the live demo components (neutral light) */
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #0a0a0a;
+  --card: #ffffff;
+  --card-foreground: #0a0a0a;
+  --muted: #f5f5f5;
+  --muted-foreground: #737373;
+  --primary: #171717;
+  --primary-foreground: #fafafa;
+  --secondary: #f5f5f5;
+  --secondary-foreground: #171717;
+  --accent: #f5f5f5;
+  --accent-foreground: #171717;
+  --destructive: #dc2626;
+  --destructive-foreground: #fafafa;
+  --border: #e5e5e5;
+  --input: #e5e5e5;
+  --ring: #a3a3a3;
 }
 
 @theme inline {
+  --color-abyss: var(--abyss);
+  --color-abyss-2: var(--abyss-2);
+  --color-raised: var(--raised);
+  --color-frost: var(--frost);
+  --color-frost-dim: var(--frost-dim);
+  --color-frost-faint: var(--frost-faint);
+  --color-orchid: var(--orchid);
+  --color-fuchsia-core: var(--fuchsia-core);
+  --color-violet-core: var(--violet-core);
+  --color-veil: var(--veil);
+  --color-veil-soft: var(--veil-soft);
+  --font-display: var(--font-display), system-ui, sans-serif;
+  --font-body: var(--font-body), system-ui, sans-serif;
+  --font-mono: var(--font-mono), ui-monospace, monospace;
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --animate-marquee: marquee 36s linear infinite;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
   }
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--abyss);
+  color: var(--frost);
+  font-family: var(--font-body), system-ui, sans-serif;
+  overflow-x: clip;
+}
+
+::selection {
+  background: var(--orchid);
+  color: var(--abyss);
+}
+
+/* ——— flat raised surfaces ——— */
+.panel {
+  background: var(--abyss-2);
+  border: 1px solid var(--veil-soft);
+  border-radius: 14px;
+}
+
+.panel-hover {
+  transition: border-color 0.2s ease;
+}
+
+.panel-hover:hover {
+  border-color: rgba(226, 109, 248, 0.35);
+}
+
+/* ——— calm page entrance ——— */
+.rise {
+  opacity: 0;
+  animation: rise 0.45s ease-out forwards;
+  animation-delay: var(--rise-delay, 0ms);
+}
+
+/* ——— page entrance ——— */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .rise {
+    opacity: 1;
+    animation: none;
+  }
+}
+
+/* ——— hairline used between blocks ——— */
+.hairline {
+  height: 1px;
+  background: var(--veil-soft);
+}
+
+/* ——— scrollbars ——— */
+.prompt-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(226, 109, 248, 0.35) transparent;
+}
+
+.prompt-scroll::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.prompt-scroll::-webkit-scrollbar-thumb {
+  background: rgba(226, 109, 248, 0.3);
+  border-radius: 3px;
 }

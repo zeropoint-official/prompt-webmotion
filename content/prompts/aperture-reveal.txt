@@ -1,0 +1,428 @@
+You are given a task to integrate an existing React component in the codebase.
+
+The codebase should support:
+- Next.js (App Router or Pages)
+- Tailwind CSS
+- TypeScript
+
+If it doesn't, provide instructions on how to install Tailwind or TypeScript.
+
+Determine the default path for components. If it is not /components, provide instructions
+on why it is important to create that folder.
+
+Copy-paste this component to /components/ApertureReveal.tsx:
+
+```tsx
+"use client";
+
+import { useEffect, useRef } from "react";
+import Image from "next/image";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+gsap.registerPlugin(ScrollTrigger);
+
+type ApertureRevealProps = {
+  /** Path or URL to the signature image */
+  imageSrc: string;
+  imageAlt: string;
+  /** Short eyebrow label shown top-centre, e.g. "The Collection" */
+  eyebrow?: string;
+  /** Giant word drifting left → right behind image, e.g. "RESIDENCES" */
+  ghostWord?: string;
+  /** Smaller italic word counter-drifting right → left, e.g. "· cyprus ·" */
+  echoWord?: string;
+  /** Caption line 1 — larger, full opacity */
+  captionStrong?: string;
+  /** Caption line 2 — dimmed ~45% opacity */
+  captionSoft?: string;
+  /** Small metadata at bottom-right, e.g. coordinates or a date */
+  metaRight?: string;
+  /** Hint text below metaRight */
+  scrollHint?: string;
+};
+
+export default function ApertureReveal({
+  imageSrc,
+  imageAlt,
+  eyebrow = "The Collection",
+  ghostWord = "EXPLORE",
+  echoWord = "· discover ·",
+  captionStrong = "A signature work.",
+  captionSoft = "Crafted with intention.",
+  metaRight = "Featured project",
+  scrollHint = "Scroll to continue ↓",
+}: ApertureRevealProps) {
+  const sectionRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section) return;
+
+    const mm = gsap.matchMedia();
+
+    // Desktop only — pinning + scrubbed clip-path on touch is a major jank source.
+    mm.add("(min-width: 768px)", () => {
+      const ctx = gsap.context(() => {
+        const tl = gsap.timeline({
+          scrollTrigger: {
+            trigger: section,
+            start: "top top",
+            end: "+=220%",
+            pin: true,
+            scrub: 0.6,
+            anticipatePin: 1,
+          },
+        });
+
+        // Ghost word drifts L → R, letter-spacing opens
+        tl.fromTo(
+          ".ar-ghost",
+          { xPercent: 28, opacity: 0, letterSpacing: "-0.02em" },
+          { xPercent: -32, opacity: 1, letterSpacing: "0.02em", ease: "none" },
+          0,
+        );
+
+        // Echo word counter-drifts R → L
+        tl.fromTo(
+          ".ar-echo",
+          { xPercent: -22, opacity: 0 },
+          { xPercent: 24, opacity: 1, ease: "none" },
+          0,
+        );
+
+        // Eyebrow + flanking hairlines
+        tl.fromTo(".ar-eyebrow", { opacity: 0, y: -10 }, { opacity: 1, y: 0, ease: "power2.out" }, 0);
+        tl.fromTo(".ar-rule", { scaleX: 0 }, { scaleX: 1, ease: "power2.out" }, 0);
+
+        // THE CENTREPIECE — clip-path slit → full bleed
+        tl.fromTo(
+          ".ar-clip",
+          { clipPath: "inset(49% 18% 49% 18%)" },
+          { clipPath: "inset(0% 0% 0% 0%)", ease: "power3.inOut", duration: 1.2 },
+          0.1,
+        );
+
+        // Scale 1.5 → 1.02 (gentle pull-back as the image opens)
+        tl.fromTo(".ar-img", { scale: 1.5 }, { scale: 1.02, ease: "none" }, 0.1);
+
+        // Quick light flash at the moment the slit opens
+        tl.fromTo(
+          ".ar-flare",
+          { opacity: 0 },
+          { opacity: 1, ease: "power2.out", duration: 0.25, yoyo: true, repeat: 1 },
+          0.25,
+        );
+
+        // Corner brackets appear in the back half
+        tl.fromTo(
+          ".ar-bracket",
+          { opacity: 0, scale: 0.6 },
+          { opacity: 1, scale: 1, ease: "power2.out", stagger: 0.04 },
+          0.6,
+        );
+
+        // Caption and meta rise in near the end
+        tl.fromTo(".ar-caption", { opacity: 0, y: 28 }, { opacity: 1, y: 0, ease: "power2.out" }, 0.72);
+        tl.fromTo(".ar-meta", { opacity: 0, y: 20 }, { opacity: 1, y: 0, ease: "power2.out" }, 0.78);
+
+        // Vertical progress rail at right edge
+        tl.fromTo(".ar-progress", { scaleY: 0 }, { scaleY: 1, ease: "none" }, 0);
+      }, section);
+
+      return () => ctx.revert();
+    });
+
+    return () => mm.revert();
+  }, []);
+
+  return (
+    // Outer wrapper is load-bearing. GSAP inserts a pin-spacer between the section
+    // and its parent on pin; without this wrapper React's removeChild crashes on
+    // route change ("Node is not a child of this node").
+    <div className="relative">
+      <section
+        ref={sectionRef}
+        className="relative w-full overflow-hidden py-24 md:py-0 md:h-screen"
+        style={{
+          background: "var(--color-bg, #0f0b06)",
+          borderTop: "1px solid var(--color-line, rgba(255,255,255,0.08))",
+        }}
+        aria-label={eyebrow}
+      >
+        {/* Warm radial accent spot */}
+        <div
+          className="pointer-events-none absolute inset-0 opacity-60"
+          style={{
+            background:
+              "radial-gradient(70% 60% at 50% 50%, rgba(212,180,106,0.08), transparent 70%)",
+          }}
+        />
+
+        {/* Ghost word — back plane, desktop only */}
+        <div className="hidden md:flex pointer-events-none absolute inset-0 items-center justify-center overflow-hidden select-none">
+          <span
+            className="ar-ghost font-light leading-none whitespace-nowrap opacity-0"
+            style={{
+              fontSize: "22vw",
+              fontFamily: "var(--font-display, serif)",
+              letterSpacing: "-0.05em",
+              color: "var(--color-accent, #d4b46a)",
+              opacity: 0.055,
+              willChange: "transform, opacity",
+            }}
+          >
+            {ghostWord}
+          </span>
+        </div>
+
+        {/* Echo word — counter drift, even fainter, desktop only */}
+        <div className="hidden md:flex pointer-events-none absolute inset-0 items-center justify-center overflow-hidden select-none">
+          <span
+            className="ar-echo font-light italic leading-none whitespace-nowrap opacity-0"
+            style={{
+              fontSize: "10vw",
+              fontFamily: "var(--font-display, serif)",
+              color: "var(--color-text, #e8e0d0)",
+              opacity: 0.04,
+              willChange: "transform, opacity",
+            }}
+          >
+            {echoWord}
+          </span>
+        </div>
+
+        {/* Eyebrow bar — top centre */}
+        <div className="ar-eyebrow absolute top-10 left-0 right-0 flex items-center justify-center gap-4 z-20 px-6 md:opacity-0">
+          <span
+            className="ar-rule h-px w-16 origin-right md:scale-x-0"
+            style={{ background: "var(--color-accent, #d4b46a)", opacity: 0.5 }}
+          />
+          <span
+            style={{
+              fontFamily: "monospace",
+              fontSize: "0.62rem",
+              textTransform: "uppercase",
+              letterSpacing: "0.28em",
+              color: "var(--color-accent, #d4b46a)",
+            }}
+          >
+            {eyebrow}
+          </span>
+          <span
+            className="ar-rule h-px w-16 origin-left md:scale-x-0"
+            style={{ background: "var(--color-accent, #d4b46a)", opacity: 0.5 }}
+          />
+        </div>
+
+        {/* Vertical progress rail — right edge, desktop only */}
+        <div
+          className="hidden md:block absolute top-1/2 right-8 -translate-y-1/2 h-40 w-px z-10"
+          style={{ background: "rgba(128,128,128,0.2)" }}
+        >
+          <div
+            className="ar-progress absolute inset-0 origin-top"
+            style={{
+              background:
+                "linear-gradient(to bottom, rgba(212,180,106,0.6), #d4b46a, rgba(212,180,106,0.3))",
+              transform: "scaleY(0)",
+            }}
+          />
+        </div>
+
+        {/* Centre stage — image */}
+        <div className="relative md:absolute md:inset-0 flex items-center justify-center px-5 md:px-12 z-10">
+          <div
+            className="relative w-full"
+            style={{ maxWidth: "min(1060px, calc(62vh * 1.6))" }}
+          >
+            {/* 4 corner brackets */}
+            <span
+              className="ar-bracket absolute -top-5 -left-5 w-10 h-10 border-l border-t md:opacity-0"
+              style={{ borderColor: "var(--color-accent, #d4b46a)" }}
+            />
+            <span
+              className="ar-bracket absolute -top-5 -right-5 w-10 h-10 border-r border-t md:opacity-0"
+              style={{ borderColor: "var(--color-accent, #d4b46a)" }}
+            />
+            <span
+              className="ar-bracket absolute -bottom-5 -left-5 w-10 h-10 border-l border-b md:opacity-0"
+              style={{ borderColor: "var(--color-accent, #d4b46a)" }}
+            />
+            <span
+              className="ar-bracket absolute -bottom-5 -right-5 w-10 h-10 border-r border-b md:opacity-0"
+              style={{ borderColor: "var(--color-accent, #d4b46a)" }}
+            />
+
+            {/* The aperture — starts as a slit on desktop, full on mobile */}
+            <div
+              className="ar-clip relative overflow-hidden md:[clip-path:inset(49%_18%_49%_18%)]"
+              style={{ aspectRatio: "16/10", width: "100%" }}
+            >
+              <div
+                className="ar-img absolute inset-0 md:scale-[1.5]"
+                style={{ willChange: "transform" }}
+              >
+                <Image
+                  src={imageSrc}
+                  alt={imageAlt}
+                  fill
+                  sizes="(max-width: 768px) 100vw, 90vw"
+                  className="object-cover"
+                  priority
+                />
+                {/* Bottom vignette */}
+                <div
+                  className="absolute inset-0 pointer-events-none"
+                  style={{
+                    background:
+                      "linear-gradient(180deg, transparent 68%, rgba(0,0,0,0.55) 100%)",
+                  }}
+                />
+              </div>
+
+              {/* Aperture flare — horizontal light streak */}
+              <div
+                className="ar-flare absolute inset-0 pointer-events-none opacity-0"
+                style={{
+                  background:
+                    "linear-gradient(180deg, transparent 45%, rgba(255,255,255,0.25) 50%, transparent 55%)",
+                  mixBlendMode: "screen",
+                }}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom caption + meta */}
+        <div className="relative md:absolute mt-10 md:mt-0 md:bottom-16 md:left-0 md:right-0 z-20 px-5 md:px-12">
+          <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-3 md:gap-6 max-w-[1100px] mx-auto">
+            <div className="ar-caption md:opacity-0">
+              <div
+                className="w-24 h-px mb-4"
+                style={{ background: "var(--color-accent, #d4b46a)", opacity: 0.4 }}
+              />
+              <p
+                style={{
+                  fontFamily: "var(--font-display, serif)",
+                  fontWeight: 300,
+                  fontSize: "clamp(1.6rem, 2.2vw, 2.2rem)",
+                  lineHeight: 1.05,
+                  letterSpacing: "-0.025em",
+                  color: "var(--color-text, #e8e0d0)",
+                }}
+              >
+                {captionStrong}
+                <br />
+                <span style={{ opacity: 0.45 }}>{captionSoft}</span>
+              </p>
+            </div>
+            <div className="ar-meta md:opacity-0 md:text-right">
+              <p
+                style={{
+                  fontFamily: "monospace",
+                  fontSize: "0.58rem",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.32em",
+                  color: "var(--color-accent, #d4b46a)",
+                  opacity: 0.7,
+                  marginBottom: "0.25rem",
+                }}
+              >
+                {metaRight}
+              </p>
+              <p
+                style={{
+                  fontFamily: "monospace",
+                  fontSize: "0.56rem",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.28em",
+                  color: "var(--color-text, #e8e0d0)",
+                  opacity: 0.4,
+                }}
+              >
+                {scrollHint}
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+```
+
+demo.tsx
+```tsx
+import ApertureReveal from "@/components/ApertureReveal";
+
+export default function Home() {
+  return (
+    <>
+      {/* ... your hero section above ... */}
+
+      <ApertureReveal
+        imageSrc="/images/your-signature-image.jpg"
+        imageAlt="A beautiful architectural residence"
+        eyebrow="The Collection"
+        ghostWord="RESIDENCES"
+        echoWord="· alethriko ·"
+        captionStrong="Four residences."
+        captionSoft="Considered in every measure."
+        metaRight="34.707° N · 33.022° E"
+        scrollHint="The portfolio, below ↓"
+      />
+
+      {/* ... rest of the page ... */}
+    </>
+  );
+}
+```
+
+Install NPM dependencies:
+```bash
+npm i gsap
+```
+
+CSS variables to set in your global stylesheet (or swap with hardcoded values in the component):
+```css
+:root {
+  --color-bg: #0f0b06;       /* section background */
+  --color-text: #e8e0d0;     /* main text */
+  --color-accent: #d4b46a;   /* gold / brand accent */
+  --color-line: rgba(255,255,255,0.08);  /* hairlines / borders */
+  --font-display: "YourSerifFont", serif;
+}
+```
+
+Implementation Guidelines
+ 1. Analyze the component structure and identify all required dependencies
+ 2. Review the component's arguments and state
+ 3. Identify any required context providers or hooks and install them
+ 4. Questions to Ask
+  - What image will be the signature reveal image?
+  - What text should appear in the ghost word, caption, and eyebrow?
+  - What CSS variables / design tokens does the project already use?
+  - Is GSAP already installed? (check package.json before running npm install)
+  - Does the project use a smooth-scroll library like Lenis? If so, wire it to ScrollTrigger:
+    lenis.on("scroll", ScrollTrigger.update)
+    gsap.ticker.add((time) => lenis.raf(time * 1000))
+    gsap.ticker.lagSmoothing(0)
+
+Steps to integrate
+ 0. Copy-paste the component to /components/ApertureReveal.tsx
+ 1. Install gsap if not already present
+ 2. Replace imageSrc with your actual image path (use a real landscape-format image)
+ 3. Set the eyebrow, ghost word, echo word, caption, and meta text to match your content
+ 4. Set CSS variables in your global stylesheet, or replace var(--color-accent, …) with hardcoded values
+ 5. Place <ApertureReveal /> immediately after the hero section in your page
+
+Critical rules — do not violate these or the component will break:
+ - DO NOT remove the outer <div className="relative"> wrapper. GSAP inserts a pin-spacer between
+   the section and its parent; without the wrapper, React's removeChild will crash on route change.
+ - DO NOT animate clip-path on mobile. The md:[clip-path:inset(...)] class gates the initial slit
+   state to desktop only. Without the md: prefix, the image is invisible on mobile.
+ - DO NOT add scroll-snap. It fights GSAP ScrollTrigger pins.
+ - DO NOT pin on mobile. The gsap.matchMedia("(min-width: 768px)") guard is non-negotiable.
+ - DO NOT use the useGSAP() hook. The useEffect + gsap.context + gsap.matchMedia pattern cleans up
+   correctly on hot-reload and route change.
