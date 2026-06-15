@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ClerkProvider } from "@clerk/nextjs";
 import {
   Bricolage_Grotesque,
   Schibsted_Grotesk,
@@ -23,9 +24,9 @@ const mono = Spline_Sans_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "The Section Library — Web Motion Academy",
+  title: "The Web Motion Library — Web Motion Academy",
   description:
-    "A library of ready-made, production-grade section prompts. Paste one into Claude Code, tell it about your brand, and the section appears on your site — polished, animated, responsive.",
+    "A library of ready-made, production-grade prompts: animated components, hero animations, and full website templates. Paste one into Claude Code, tell it about your brand, and it appears on your site — polished, animated, responsive.",
 };
 
 export default function RootLayout({
@@ -34,11 +35,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${display.variable} ${body.variable} ${mono.variable} h-full antialiased`}
+    <ClerkProvider
+      signInUrl="/sign-in"
+      signUpUrl="/sign-up"
+      signInFallbackRedirectUrl="/"
+      signUpFallbackRedirectUrl="/"
     >
-      <body className="min-h-full">{children}</body>
-    </html>
+      <html
+        lang="en"
+        className={`${display.variable} ${body.variable} ${mono.variable} h-full antialiased`}
+      >
+        <body className="min-h-full">{children}</body>
+      </html>
+    </ClerkProvider>
   );
 }

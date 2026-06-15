@@ -9,7 +9,7 @@ import CopyButton from "@/components/CopyButton";
 import Checklist from "@/components/Checklist";
 
 export const metadata: Metadata = {
-  title: "Guide — The Section Library",
+  title: "Guide — The Web Motion Library",
 };
 
 const steps = [

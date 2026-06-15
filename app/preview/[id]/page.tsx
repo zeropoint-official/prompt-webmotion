@@ -16,7 +16,7 @@ export async function generateMetadata({
   return {
     title: entry
       ? `${entry.section.title} — Live Preview`
-      : "Live Preview — The Section Library",
+      : "Live Preview — The Web Motion Library",
   };
 }
 

@@ -25,16 +25,24 @@ type NavLinkProps = {
   onNavigate: () => void;
   children: React.ReactNode;
   nested?: boolean;
+  badge?: React.ReactNode;
 };
 
-function NavLink({ href, active, onNavigate, children, nested }: NavLinkProps) {
+function NavLink({
+  href,
+  active,
+  onNavigate,
+  children,
+  nested,
+  badge,
+}: NavLinkProps) {
   return (
     <li>
       <Link
         href={href}
         onClick={onNavigate}
         aria-current={active ? "page" : undefined}
-        className={`block truncate border-l-2 py-1.5 transition-colors duration-200 ${
+        className={`flex items-center justify-between gap-2 border-l-2 py-1.5 transition-colors duration-200 ${
           nested ? "pl-4 text-[12.5px]" : "pl-3 text-[13px]"
         } ${
           active
@@ -42,9 +50,18 @@ function NavLink({ href, active, onNavigate, children, nested }: NavLinkProps) {
             : "border-transparent text-frost-dim hover:border-veil hover:text-frost"
         }`}
       >
-        {children}
+        <span className="truncate">{children}</span>
+        {badge}
       </Link>
     </li>
+  );
+}
+
+function SoonBadge() {
+  return (
+    <span className="shrink-0 rounded-full bg-orchid/12 px-1.5 py-0.5 font-mono text-[8px] tracking-[0.18em] text-orchid uppercase">
+      Soon
+    </span>
   );
 }
 
@@ -56,7 +73,7 @@ export default function Sidebar({
 }: SidebarProps) {
   const pathname = usePathname();
 
-  const libraryActive =
+  const componentsActive =
     pathname === "/library" || pathname.startsWith("/section");
 
   return (
@@ -79,7 +96,7 @@ export default function Sidebar({
         <div className="flex items-center justify-between px-5 pt-6 pb-4">
           <Link href="/" onClick={onClose} className="min-w-0">
             <p className="truncate font-display text-[15px] font-semibold tracking-tight text-frost">
-              Section Library
+              Web Motion Library
             </p>
             <p className="truncate font-mono text-[9px] tracking-[0.22em] text-frost-faint uppercase">
               Web Motion Academy
@@ -107,35 +124,62 @@ export default function Sidebar({
             <NavLink href="/" active={pathname === "/"} onNavigate={onClose}>
               Home
             </NavLink>
-            <NavLink
-              href="/library"
-              active={libraryActive}
-              onNavigate={onClose}
-            >
-              Library
-            </NavLink>
           </ul>
 
-          {groups.map((group) => (
-            <div key={group.id} className="mt-5">
-              <p className="pl-3 pb-1.5 font-mono text-[9px] tracking-[0.24em] text-frost-faint uppercase">
-                {group.name}
-              </p>
-              <ul className="flex flex-col">
-                {group.sections.map((section) => (
-                  <NavLink
-                    key={section.id}
-                    href={`/section/${section.id}`}
-                    active={pathname === `/section/${section.id}`}
-                    onNavigate={onClose}
-                    nested
-                  >
-                    {section.title}
-                  </NavLink>
-                ))}
-              </ul>
+          {/* ——— Components (live) ——— */}
+          <div className="mt-5">
+            <ul className="flex flex-col">
+              <NavLink
+                href="/library"
+                active={componentsActive}
+                onNavigate={onClose}
+              >
+                Components
+              </NavLink>
+            </ul>
+            <div className="mt-1.5 ml-3 border-l border-veil-soft pl-1">
+              {groups.map((group) => (
+                <div key={group.id} className="mt-2.5 first:mt-1">
+                  <p className="pl-3 pb-1 font-mono text-[8.5px] tracking-[0.24em] text-frost-faint uppercase">
+                    {group.name}
+                  </p>
+                  <ul className="flex flex-col">
+                    {group.sections.map((section) => (
+                      <NavLink
+                        key={section.id}
+                        href={`/section/${section.id}`}
+                        active={pathname === `/section/${section.id}`}
+                        onNavigate={onClose}
+                        nested
+                      >
+                        {section.title}
+                      </NavLink>
+                    ))}
+                  </ul>
+                </div>
+              ))}
             </div>
-          ))}
+          </div>
+
+          {/* ——— upcoming categories + guide ——— */}
+          <ul className="mt-5 flex flex-col">
+            <NavLink
+              href="/hero-animations"
+              active={pathname.startsWith("/hero-animations")}
+              onNavigate={onClose}
+              badge={<SoonBadge />}
+            >
+              Hero Animations
+            </NavLink>
+            <NavLink
+              href="/templates"
+              active={pathname.startsWith("/templates")}
+              onNavigate={onClose}
+              badge={<SoonBadge />}
+            >
+              Website Templates
+            </NavLink>
+          </ul>
 
           <ul className="mt-5 flex flex-col">
             <NavLink
@@ -149,7 +193,7 @@ export default function Sidebar({
         </nav>
 
         <p className="border-t border-veil-soft px-5 py-4 font-mono text-[9px] tracking-[0.2em] text-frost-faint uppercase">
-          Lesson 3 · Build your site
+          Web Motion Academy · Lesson 3
         </p>
       </aside>
     </>

@@ -20,8 +20,8 @@ export async function generateMetadata({
   const entry = getSection(id);
   return {
     title: entry
-      ? `${entry.section.title} — The Section Library`
-      : "The Section Library",
+      ? `${entry.section.title} — The Web Motion Library`
+      : "The Web Motion Library",
   };
 }
 

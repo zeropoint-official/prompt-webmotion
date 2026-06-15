@@ -35,7 +35,7 @@ export default function Shell({ groups, searchItems, children }: ShellProps) {
             <MenuIcon className="h-[17px] w-[17px]" />
           </button>
           <p className="font-display text-[14px] font-semibold tracking-tight text-frost">
-            Section Library
+            Web Motion Library
           </p>
         </header>
 
@@ -45,7 +45,7 @@ export default function Shell({ groups, searchItems, children }: ShellProps) {
 
         <footer className="border-t border-veil-soft px-5 py-5 sm:px-8 lg:px-12">
           <p className="font-mono text-[9.5px] tracking-[0.22em] text-frost-faint uppercase">
-            Web Motion Academy · The Section Library · Lesson 3
+            Web Motion Academy · The Web Motion Library · Lesson 3
           </p>
         </footer>
       </div>
