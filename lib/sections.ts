@@ -226,6 +226,60 @@ export const groups: Group[] = [
   },
 ];
 
+export type Tool = {
+  name: string;
+  tagline: string;
+  body: string;
+  note?: string;
+  href: string;
+  linkLabel: string;
+  commands?: { label: string; command: string }[];
+};
+
+export const tools: Tool[] = [
+  {
+    name: "Cursor",
+    tagline: "Code editor",
+    body: "Our main editor. It's a code editor built on VS Code, and we reach for it because it's simple to get going with — everything else runs inside it.",
+    href: "https://cursor.com",
+    linkLabel: "cursor.com",
+  },
+  {
+    name: "Claude Code",
+    tagline: "AI that writes the code",
+    body: "This is what actually writes the code. We run it in a terminal, usually right inside Cursor, and hand it the prompts from this library. Open the setup page for the full walkthrough, or paste the command for your system below to install it.",
+    note: "Paid subscription required.",
+    href: "https://docs.claude.com/en/docs/claude-code/setup",
+    linkLabel: "Read the install guide",
+    commands: [
+      {
+        label: "macOS / Linux",
+        command: "curl -fsSL https://claude.ai/install.sh | bash",
+      },
+      {
+        label: "Windows (PowerShell)",
+        command: "irm https://claude.ai/install.ps1 | iex",
+      },
+    ],
+  },
+  {
+    name: "ChatGPT",
+    tagline: "General-purpose AI",
+    body: "Our main everyday AI tool, used for all sorts of things — a lot of the time to generate images for sites.",
+    note: "The Plus plan is highly recommended.",
+    href: "https://chatgpt.com",
+    linkLabel: "chatgpt.com",
+  },
+  {
+    name: "Kling",
+    tagline: "AI video generation",
+    body: "What we always use for video generation. A subscription is mandatory to use it — sign up through our link to get a percentage off your purchase.",
+    note: "Subscription required · use the link for a discount.",
+    href: "https://pro.klingai.com/h5-app/invitation?code=7BF6QG88PHMV",
+    linkLabel: "Sign up with discount",
+  },
+];
+
 export const recipes = [
   {
     name: "Real estate / construction site",

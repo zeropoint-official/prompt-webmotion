@@ -1,0 +1,76 @@
+You are setting up a brand-new Next.js project. I am running you from inside an
+EMPTY (or almost empty) project folder, and I want the finished Next.js app to live
+directly in THIS folder — not in a sub-folder.
+
+The catch: `create-next-app` refuses to scaffold into a non-empty directory and, the
+way I want you to run it, it will create its own `my-app/` sub-folder. So the job is
+two parts: (1) scaffold the latest Next.js into `my-app/`, then (2) move everything
+out of `my-app/` up into the current directory and delete the now-empty `my-app/`.
+
+Follow these steps exactly.
+
+STEP 0 — Confirm where you are
+- Run `pwd` and `ls -la` so we both agree on the current directory and what is in it.
+- The only files you should expect to see are things like a `.git/` folder, this
+  prompt, a README, or nothing at all. If you see real source files, STOP and ask me
+  before continuing — I do not want to overwrite existing work.
+
+STEP 1 — Scaffold the latest Next.js into `my-app/`
+- Use the latest version of Next.js. Do NOT pin an old version from memory — always
+  pull the newest with the `latest` tag.
+- Create it in a sub-folder called `my-app` using these defaults (this is my stack):
+  - TypeScript: yes
+  - ESLint: yes
+  - Tailwind CSS: yes
+  - `src/` directory: NO (I keep `app/` at the project root)
+  - App Router: yes
+  - Turbopack: yes
+  - Import alias: yes, the default `@/*`
+- Run it non-interactively so it doesn't stop to ask me questions:
+
+  npx create-next-app@latest my-app --ts --eslint --tailwind --app --no-src-dir --turbopack --import-alias "@/*" --use-npm --yes
+
+  (If my project already has a lockfile that tells you a different package manager —
+  pnpm or yarn — use that flag instead of `--use-npm`. Check first.)
+
+STEP 2 — Move everything from `my-app/` into the current directory
+- Move ALL files AND folders out of `my-app/`, including dotfiles like `.gitignore`,
+  `.eslintrc`/`eslint.config.*`, and any `.vscode`. Do not miss hidden files.
+- A reliable way on macOS/Linux:
+
+  shopt -s dotglob nullglob
+  mv my-app/* my-app/.* . 2>/dev/null || true
+  shopt -u dotglob
+
+  Then verify `my-app/` is empty and remove it:
+
+  rmdir my-app
+
+- Handle collisions sensibly:
+  - If the current folder is already a git repo (`.git/` exists), do NOT overwrite it
+    with the one Next.js generated. Keep my existing `.git/`. If `my-app/` created its
+    own `.git/`, delete `my-app/.git` before moving, so my history stays intact.
+  - If a `README.md` already exists here, keep mine and discard the generated one (or
+    merge if mine is empty).
+  - `.gitignore` from Next.js is the one we want — bring it over.
+
+STEP 3 — Make it run from here
+- Confirm the final structure is a normal Next.js app at the root: `package.json`,
+  `app/`, `tsconfig.json`, `next.config.*`, `tailwind`/`postcss` config, etc., with
+  NO leftover `my-app/` folder.
+- Install dependencies if they aren't already (`npm install`).
+- Start the dev server (`npm run dev`) and confirm it boots cleanly on
+  http://localhost:3000 with no errors in the terminal.
+
+STEP 4 — Report back
+- Show me the final top-level `ls -la`.
+- Tell me the exact Next.js version that got installed (from `package.json`).
+- Confirm the dev server is running and the starter page loads.
+
+Important rules:
+- This is NOT the Next.js you may remember — APIs and config conventions change between
+  versions. After scaffolding, if you need to write or change any config, read the
+  generated files and the installed docs first instead of assuming old conventions.
+- Never delete anything outside `my-app/` without asking me.
+- If `create-next-app` errors because the folder isn't empty, tell me what's in the way
+  rather than force-deleting my files.

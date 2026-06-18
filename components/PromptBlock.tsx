@@ -6,9 +6,15 @@ import CopyButton from "./CopyButton";
 type PromptBlockProps = {
   text: string;
   title: string;
+  /** header label before the title; defaults to the section-page wording */
+  label?: string;
 };
 
-export default function PromptBlock({ text, title }: PromptBlockProps) {
+export default function PromptBlock({
+  text,
+  title,
+  label = "Step 2 — the prompt",
+}: PromptBlockProps) {
   const [open, setOpen] = useState(false);
   const lines = text.split("\n").length;
   const chars = text.length;
@@ -17,7 +23,7 @@ export default function PromptBlock({ text, title }: PromptBlockProps) {
     <div className="panel overflow-hidden">
       <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 border-b border-veil-soft px-6 py-4">
         <span className="font-mono text-[10px] tracking-[0.22em] text-frost-dim uppercase">
-          Step 2 — the prompt · {title}
+          {label} · {title}
         </span>
         <span className="font-mono text-[10px] tracking-[0.14em] text-frost-faint">
           {lines.toLocaleString("en-US")} lines ·{" "}

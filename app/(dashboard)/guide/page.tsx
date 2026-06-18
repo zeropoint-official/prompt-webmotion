@@ -4,9 +4,11 @@ import {
   CUSTOMIZATION_TEMPLATE,
   recipes,
   checkpoints,
+  tools,
 } from "@/lib/sections";
 import CopyButton from "@/components/CopyButton";
 import Checklist from "@/components/Checklist";
+import ToolsAccordion from "@/components/ToolsAccordion";
 
 export const metadata: Metadata = {
   title: "Guide — The Web Motion Library",
@@ -44,10 +46,12 @@ const rules = [
 ];
 
 function PartHeading({
+  id,
   kicker,
   title,
   intro,
 }: {
+  id?: string;
   kicker: string;
   title: string;
   intro: string;
@@ -57,7 +61,10 @@ function PartHeading({
       <p className="font-mono text-[10px] tracking-[0.28em] text-orchid uppercase">
         {kicker}
       </p>
-      <h2 className="mt-3 font-display text-[1.7rem] leading-tight font-bold tracking-tight text-frost sm:text-[2rem]">
+      <h2
+        id={id}
+        className="mt-3 font-display text-[1.7rem] leading-tight font-bold tracking-tight text-frost sm:text-[2rem]"
+      >
         {title}
       </h2>
       <p className="mt-3 max-w-2xl text-[14.5px] leading-[1.8] text-frost-dim">
@@ -70,28 +77,43 @@ function PartHeading({
 export default function GuidePage() {
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-14">
-      {/* ———— part 1 · how to use ———— */}
+      {/* ———— part 1 · tools & subscriptions ———— */}
       <section
         className="rise flex flex-col gap-8"
         style={{ "--rise-delay": "40ms" } as React.CSSProperties}
-        aria-labelledby="guide-how"
+        aria-labelledby="guide-tools"
       >
         <header>
           <p className="font-mono text-[10px] tracking-[0.28em] text-orchid uppercase">
-            Read this once, use it ten times
+            Start here
           </p>
           <h1
-            id="guide-how"
+            id="guide-tools"
             className="mt-3 font-display text-[2.2rem] leading-tight font-bold tracking-tight text-frost sm:text-[2.6rem]"
           >
-            How to use any prompt in this library
+            The tools &amp; subscriptions we use
           </h1>
           <p className="mt-3 max-w-2xl text-[14.5px] leading-[1.8] text-frost-dim">
-            Every section in the library works the same way: three steps, in
-            order, every time. Master this flow once and the whole library is
-            yours.
+            These are the few tools every build in this library runs on. Get
+            these set up first — the prompts below assume you have them.
           </p>
         </header>
+
+        <ToolsAccordion tools={tools} />
+      </section>
+
+      {/* ———— part 2 · how to use ———— */}
+      <section
+        className="flex scroll-mt-24 flex-col gap-8"
+        aria-labelledby="guide-how"
+      >
+        <div className="hairline" />
+        <PartHeading
+          id="guide-how"
+          kicker="Read this once, use it ten times"
+          title="How to use any prompt in this library"
+          intro="Every section in the library works the same way: three steps, in order, every time. Master this flow once and the whole library is yours."
+        />
 
         <ol className="flex flex-col">
           {steps.map((step) => (
@@ -150,6 +172,7 @@ export default function GuidePage() {
       >
         <div className="hairline" />
         <PartHeading
+          id="guide-recipes"
           kicker="Putting a page together"
           title="Two proven recipes"
           intro="A full page is just a sequence of these sections, in an order that lets the page breathe."
@@ -207,6 +230,7 @@ export default function GuidePage() {
       >
         <div className="hairline" />
         <PartHeading
+          id="guide-checkpoint"
           kicker="Before you move on"
           title="Checkpoint"
           intro="Tick these off — your progress is saved in this browser."

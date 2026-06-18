@@ -1,0 +1,347 @@
+You are building a scroll-driven background video section. As the visitor scrolls the
+section up and down, a video plays forwards and backwards in the background, perfectly
+locked to the scroll position — like the Apple AirPods / iPhone product pages. We do
+NOT use a <video> element for this (scrubbing a real video backwards is janky and
+unreliable across browsers). Instead we export the video to a sequence of image frames
+with ffmpeg and paint the right frame onto a <canvas> for the current scroll position.
+
+I will give you one or two source videos:
+- A DESKTOP video (landscape, e.g. 16:9).
+- Optionally a MOBILE video (portrait, e.g. 9:16). If I give you both, build BOTH and
+  load the correct set based on screen size. If I only give you one, use it for all
+  screens.
+
+═══════════════════════════════════════════════════════════════════════════════
+PART A — Export the frames with ffmpeg (highest quality possible)
+═══════════════════════════════════════════════════════════════════════════════
+
+First check ffmpeg is installed: `ffmpeg -version`. If it isn't, tell me to install it
+(`brew install ffmpeg` on macOS) and stop.
+
+Create the output folders inside `public/`:
+  public/frames/desktop/
+  public/frames/mobile/      (only if I gave you a mobile video)
+
+Export DESKTOP frames at the highest quality, numbered and zero-padded:
+
+  ffmpeg -i desktop.mp4 -vf "fps=30,scale=1600:-2:flags=lanczos" -qscale:v 1 public/frames/desktop/frame_%04d.jpg
+
+Export MOBILE frames (only if I gave you a mobile video):
+
+  ffmpeg -i mobile.mp4 -vf "fps=30,scale=800:-2:flags=lanczos" -qscale:v 1 public/frames/mobile/frame_%04d.jpg
+
+Notes on the ffmpeg settings — adjust with me, don't guess silently:
+- `-qscale:v 1` is the best-quality JPEG. If I ask for absolute maximum quality and
+  don't care about file size, switch the output to PNG instead
+  (`frame_%04d.png`, drop `-qscale:v`). PNG is lossless but the folder gets large.
+- `fps=30` controls smoothness vs. number of frames. 30 is smooth. Drop to 24 or 20 if
+  the source is long and the frame folder gets too heavy (every frame is downloaded by
+  the browser). Tell me the final frame COUNT for each set after exporting — I need it
+  for the component below.
+- `scale=1600:-2` caps width at 1600px (plenty for a full-bleed background) and keeps
+  the aspect ratio (`-2` keeps height even). Lower it to ~1280 if the set is too heavy.
+  For mobile, 800px wide is enough.
+- Keep the frame count reasonable. As a rule of thumb aim for roughly 120–300 frames
+  per set. A 6-second clip at 30fps = ~180 frames, which is a good target. If a set
+  ends up much larger than ~300 frames, lower the fps and re-export.
+
+After exporting, run `ls public/frames/desktop | wc -l` (and the mobile one) and TELL
+ME the exact frame count for each — you must hard-code these counts in the component.
+
+═══════════════════════════════════════════════════════════════════════════════
+PART B — The ScrollVideo component
+═══════════════════════════════════════════════════════════════════════════════
+
+This uses GSAP ScrollTrigger to pin the section and scrub a frame index from the scroll
+position, and it is designed to be driven by Lenis smooth scroll on desktop (Part C).
+Heavy work (pinning + canvas) runs on desktop; mobile gets a lighter version.
+
+Create `/components/ScrollVideo.tsx`:
+
+```tsx
+"use client";
+
+import { useEffect, useRef } from "react";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+gsap.registerPlugin(ScrollTrigger);
+
+type FrameSet = {
+  /** folder under /public, no trailing slash, e.g. "/frames/desktop" */
+  dir: string;
+  /** exact number of frames ffmpeg exported into that folder */
+  count: number;
+  /** zero-padding of the frame number — 4 means frame_0001.jpg */
+  pad?: number;
+  /** file extension without the dot */
+  ext?: string;
+};
+
+type ScrollVideoProps = {
+  desktop: FrameSet;
+  /** omit if you only have one video — desktop frames are used everywhere */
+  mobile?: FrameSet;
+  /**
+   * How long the section pins for, as a multiple of the viewport height.
+   * 3 → you scroll 300vh worth before the section releases. Higher = slower playback.
+   */
+  scrollLength?: number;
+  /** optional overlay (headline, etc.) rendered above the video */
+  children?: React.ReactNode;
+  className?: string;
+};
+
+function frameUrl(set: FrameSet, i: number) {
+  const pad = set.pad ?? 4;
+  const ext = set.ext ?? "jpg";
+  // ffmpeg numbers frames starting at 1
+  const n = String(i + 1).padStart(pad, "0");
+  return `${set.dir}/frame_${n}.${ext}`;
+}
+
+export default function ScrollVideo({
+  desktop,
+  mobile,
+  scrollLength = 3,
+  children,
+  className = "",
+}: ScrollVideoProps) {
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const section = sectionRef.current;
+    const canvas = canvasRef.current;
+    if (!section || !canvas) return;
+
+    const ctx2d = canvas.getContext("2d");
+    if (!ctx2d) return;
+
+    // Pick the frame set: mobile frames under 768px if provided, else desktop.
+    const isMobile =
+      !!mobile && window.matchMedia("(max-width: 767px)").matches;
+    const set = isMobile ? mobile! : desktop;
+
+    // Preload every frame as an <img>. We draw whichever is ready.
+    const images: HTMLImageElement[] = new Array(set.count);
+    let loaded = 0;
+    const state = { frame: 0 };
+
+    // Size the canvas to its container in device pixels for crispness.
+    function resizeCanvas() {
+      const rect = canvas!.getBoundingClientRect();
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas!.width = Math.round(rect.width * dpr);
+      canvas!.height = Math.round(rect.height * dpr);
+      ctx2d!.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    // Draw one frame, "cover"-fitting it to the canvas (no distortion).
+    function draw(index: number) {
+      const img = images[index];
+      if (!img || !img.complete || img.naturalWidth === 0) return;
+      const rect = canvas!.getBoundingClientRect();
+      const cw = rect.width;
+      const ch = rect.height;
+      const ir = img.naturalWidth / img.naturalHeight;
+      const cr = cw / ch;
+      let dw = cw;
+      let dh = ch;
+      if (ir > cr) {
+        dh = ch;
+        dw = ch * ir;
+      } else {
+        dw = cw;
+        dh = cw / ir;
+      }
+      const dx = (cw - dw) / 2;
+      const dy = (ch - dh) / 2;
+      ctx2d!.clearRect(0, 0, cw, ch);
+      ctx2d!.drawImage(img, dx, dy, dw, dh);
+    }
+
+    resizeCanvas();
+
+    for (let i = 0; i < set.count; i++) {
+      const img = new Image();
+      img.src = frameUrl(set, i);
+      img.onload = () => {
+        loaded++;
+        // Paint the first frame as soon as it arrives so the section isn't blank.
+        if (i === 0) draw(0);
+      };
+      images[i] = img;
+    }
+
+    const prefersReduced = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+
+    let trigger: ScrollTrigger | null = null;
+
+    if (prefersReduced) {
+      // No scrubbing — just show the first frame and bail.
+      const onReady = () => draw(0);
+      if (images[0]?.complete) onReady();
+      else images[0].addEventListener("load", onReady, { once: true });
+    } else {
+      trigger = ScrollTrigger.create({
+        trigger: section,
+        start: "top top",
+        end: `+=${scrollLength * 100}%`,
+        pin: true,
+        scrub: 0.5,
+        anticipatePin: 1,
+        invalidateOnRefresh: true,
+        onUpdate: (self) => {
+          const target = Math.min(
+            set.count - 1,
+            Math.round(self.progress * (set.count - 1))
+          );
+          if (target !== state.frame) {
+            state.frame = target;
+            draw(target);
+          }
+        },
+      });
+    }
+
+    const onResize = () => {
+      resizeCanvas();
+      draw(state.frame);
+    };
+    window.addEventListener("resize", onResize);
+
+    // Make sure layout is measured after pin-spacers are inserted.
+    requestAnimationFrame(() => ScrollTrigger.refresh());
+
+    return () => {
+      window.removeEventListener("resize", onResize);
+      trigger?.kill();
+    };
+  }, [desktop, mobile, scrollLength]);
+
+  return (
+    <div ref={sectionRef} className={`relative h-screen w-full overflow-hidden ${className}`}>
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 block h-full w-full"
+        aria-hidden="true"
+      />
+      {children ? (
+        <div className="pointer-events-none absolute inset-0">{children}</div>
+      ) : null}
+    </div>
+  );
+}
+```
+
+Usage (`app/page.tsx` or wherever the section belongs):
+
+```tsx
+import ScrollVideo from "@/components/ScrollVideo";
+
+export default function Page() {
+  return (
+    <>
+      {/* ...sections above... */}
+
+      <ScrollVideo
+        desktop={{ dir: "/frames/desktop", count: 180 }}  // ← use YOUR real count
+        mobile={{ dir: "/frames/mobile", count: 150 }}     // ← omit if no mobile video
+        scrollLength={3}
+      >
+        {/* optional overlay content, sits above the video */}
+        <div className="flex h-full items-center justify-center">
+          <h2 className="font-display text-5xl font-bold tracking-tight text-white">
+            Your headline
+          </h2>
+        </div>
+      </ScrollVideo>
+
+      {/* ...sections below... */}
+    </>
+  );
+}
+```
+
+REPLACE the `count` values with the exact frame counts ffmpeg gave you in Part A.
+
+═══════════════════════════════════════════════════════════════════════════════
+PART C — Lenis smooth scroll (DESKTOP ONLY)
+═══════════════════════════════════════════════════════════════════════════════
+
+Lenis makes the scrubbing buttery on desktop. We deliberately DO NOT run it on
+touch/mobile devices — native momentum scrolling there is better and Lenis fights it.
+
+Install: `npm i lenis gsap @gsap/react` (gsap may already be installed — check
+package.json first).
+
+Add a smooth-scroll provider and mount it in the root layout. Create
+`/components/SmoothScroll.tsx`:
+
+```tsx
+"use client";
+
+import { useEffect } from "react";
+import Lenis from "lenis";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+gsap.registerPlugin(ScrollTrigger);
+
+export default function SmoothScroll() {
+  useEffect(() => {
+    // Desktop, non-touch, motion-OK only.
+    const isDesktop = window.matchMedia(
+      "(min-width: 768px) and (pointer: fine)"
+    ).matches;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!isDesktop || reduced) return;
+
+    const lenis = new Lenis({ lerp: 0.1, smoothWheel: true });
+
+    // Keep ScrollTrigger in sync with Lenis.
+    lenis.on("scroll", ScrollTrigger.update);
+    const ticker = (time: number) => lenis.raf(time * 1000);
+    gsap.ticker.add(ticker);
+    gsap.ticker.lagSmoothing(0);
+
+    return () => {
+      gsap.ticker.remove(ticker);
+      lenis.destroy();
+    };
+  }, []);
+
+  return null;
+}
+```
+
+Mount it once in `app/layout.tsx`, inside <body>, above {children}:
+
+```tsx
+import SmoothScroll from "@/components/SmoothScroll";
+// ...
+<body>
+  <SmoothScroll />
+  {children}
+</body>
+```
+
+If a SmoothScroll/Lenis provider already exists in the project, REUSE it — do not add a
+second one. Just make sure it is desktop-only and wired to ScrollTrigger as above.
+
+═══════════════════════════════════════════════════════════════════════════════
+Implementation rules — do not violate
+═══════════════════════════════════════════════════════════════════════════════
+- Always tell me the exact frame COUNT for each set after exporting, and hard-code it.
+- Do NOT scrub a real <video> element. The canvas frame approach is the whole point.
+- The frame folders live in `public/frames/...` so they are served as static files.
+- Keep each frame set within ~120–300 frames; re-export at a lower fps if it's heavier.
+- Lenis is DESKTOP-ONLY (`(min-width: 768px) and (pointer: fine)`), never on touch.
+- Respect `prefers-reduced-motion`: show a single static frame, no pin, no scrub.
+- Do NOT add CSS scroll-snap anywhere on the page — it fights ScrollTrigger pinning.
+- On mobile, if you exported a separate mobile set, it is used automatically; otherwise
+  the desktop frames are reused. Either way the section still pins and scrubs unless
+  reduced-motion is on.

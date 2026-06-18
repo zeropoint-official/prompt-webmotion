@@ -1,9 +1,10 @@
 import { sectionCount } from "./library";
+import { toolkitCount } from "./toolkit";
 
 export type CategoryStatus = "live" | "soon";
 
 export type Category = {
-  id: "components" | "hero-animations" | "templates";
+  id: "components" | "toolkit" | "hero-animations" | "templates";
   /** display name */
   name: string;
   /** one-line summary used on cards and in the sidebar */
@@ -40,6 +41,16 @@ export const categories: Category[] = [
       "/thumbs/horizontal-showcase.jpg",
       "/thumbs/services-accordion.jpg",
     ],
+  },
+  {
+    id: "toolkit",
+    name: "Toolkit",
+    blurb:
+      "The setup prompts and design files behind every site — scaffold, scroll-video, design system.",
+    status: "live",
+    href: "/toolkit",
+    count: toolkitCount,
+    thumbs: ["/thumbs/process-steps.jpg", "/thumbs/horizontal-showcase.jpg"],
   },
   {
     id: "hero-animations",

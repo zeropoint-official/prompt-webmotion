@@ -1,9 +1,45 @@
+import Image from "next/image";
 import Link from "next/link";
-import { groups } from "@/lib/sections";
-import { sectionCount } from "@/lib/library";
-import { categories } from "@/lib/catalog";
-import CategoryCard from "@/components/dashboard/CategoryCard";
+import { allSections, sectionCount } from "@/lib/library";
+import { toolkitItems, toolkitCount } from "@/lib/toolkit";
+import { soonCategories } from "@/lib/catalog";
+import ListRow from "@/components/dashboard/ListRow";
 import { ArrowRightIcon } from "@/components/dashboard/icons";
+
+/** Homepage spotlight: one lead component + a small gallery. Full set is /library. */
+const [lead, ...rest] = allSections.slice(0, 7);
+
+function SectionHead({
+  title,
+  meta,
+  href,
+  cta,
+}: {
+  title: string;
+  meta: string;
+  href: string;
+  cta: string;
+}) {
+  return (
+    <div className="mb-4 flex items-baseline justify-between gap-4">
+      <div className="flex items-baseline gap-3">
+        <h2 className="font-display text-lg font-semibold tracking-tight text-frost">
+          {title}
+        </h2>
+        <span className="font-mono text-[10px] tracking-[0.2em] text-frost-faint uppercase">
+          {meta}
+        </span>
+      </div>
+      <Link
+        href={href}
+        className="group inline-flex shrink-0 items-center gap-1.5 font-mono text-[10px] tracking-[0.16em] text-orchid uppercase"
+      >
+        {cta}
+        <ArrowRightIcon className="h-3 w-3 transition-transform duration-200 group-hover:translate-x-0.5" />
+      </Link>
+    </div>
+  );
+}
 
 export default function Home() {
   return (
@@ -16,18 +52,13 @@ export default function Home() {
         <p className="font-mono text-[10px] tracking-[0.28em] text-orchid uppercase">
           Web Motion Academy
         </p>
-        <h1 className="mt-4 font-display text-[2.8rem] leading-[1.04] font-bold tracking-tight text-frost sm:text-[3.8rem]">
+        <h1 className="mt-4 font-display text-[2.8rem] leading-[1.04] font-bold tracking-tight text-frost sm:text-[3.6rem]">
           The Web Motion <span className="text-orchid">Library</span>
         </h1>
         <p className="mt-5 max-w-2xl text-[15.5px] leading-[1.8] text-frost-dim">
-          One home for everything you build with Claude Code: drop-in animated{" "}
-          <strong className="font-medium text-frost">components</strong>,
-          cinematic{" "}
-          <strong className="font-medium text-frost">hero animations</strong>,
-          and complete{" "}
-          <strong className="font-medium text-frost">website templates</strong>.
-          Pick one, paste its prompt, describe your brand — it appears on your
-          site: polished, animated, responsive.
+          One home for everything you build with Claude Code — drop-in animated
+          components and a growing toolkit of the setup prompts and design files
+          behind every site. Pick one, paste its prompt, describe your brand.
         </p>
 
         <div className="mt-8 flex flex-wrap items-center gap-3">
@@ -47,82 +78,148 @@ export default function Home() {
         </div>
       </header>
 
-      {/* ———— three categories ———— */}
-      <section
-        aria-labelledby="categories-heading"
-        className="rise"
-        style={{ "--rise-delay": "120ms" } as React.CSSProperties}
-      >
-        <div className="mb-5 flex items-baseline justify-between gap-4">
-          <h2
-            id="categories-heading"
-            className="font-display text-lg font-semibold tracking-tight text-frost"
-          >
-            Three ways to build
-          </h2>
-          <p className="font-mono text-[10px] tracking-[0.2em] text-frost-faint uppercase">
-            1 live · 2 coming
-          </p>
-        </div>
+      {/* ———— components — visual spotlight ———— */}
+      <section aria-labelledby="home-components">
+        <SectionHead
+          title="Components"
+          meta={`${sectionCount} animated sections`}
+          href="/library"
+          cta="Browse all"
+        />
 
-        <div className="grid gap-5 sm:grid-cols-3">
-          {categories.map((category) => (
-            <CategoryCard key={category.id} category={category} />
-          ))}
-        </div>
-      </section>
+        {/* lead — large split card */}
+        <Link
+          href={`/section/${lead.section.id}`}
+          className="panel panel-hover group grid overflow-hidden sm:grid-cols-[1.15fr_1fr]"
+        >
+          <div className="relative aspect-[16/10] overflow-hidden border-b border-veil-soft sm:aspect-auto sm:min-h-[280px] sm:border-r sm:border-b-0">
+            <Image
+              src={`/thumbs/${lead.section.id}.jpg`}
+              alt={`Preview of the ${lead.section.title} section`}
+              fill
+              sizes="(max-width: 640px) 100vw, 55vw"
+              className="object-cover object-top transition-transform duration-500 group-hover:scale-[1.03]"
+              priority
+            />
+          </div>
+          <div className="flex flex-col justify-center p-6 sm:p-8">
+            <p className="font-mono text-[9.5px] tracking-[0.22em] text-orchid uppercase">
+              Featured · {lead.section.number} · {lead.group.name}
+            </p>
+            <h3 className="mt-2 font-display text-[1.7rem] leading-[1.1] font-bold tracking-tight text-frost transition-colors duration-200 group-hover:text-orchid sm:text-[2rem]">
+              {lead.section.title}
+            </h3>
+            <p className="mt-3 line-clamp-3 text-[13.5px] leading-[1.7] text-frost-dim">
+              {lead.section.whatItIs}
+            </p>
+            <ul className="mt-4 flex flex-wrap gap-2">
+              {lead.section.tags.slice(0, 3).map((tag) => (
+                <li
+                  key={tag}
+                  className="rounded-full border border-veil-soft px-2.5 py-1 font-mono text-[9px] tracking-[0.12em] text-frost-dim uppercase"
+                >
+                  {tag}
+                </li>
+              ))}
+            </ul>
+            <span className="mt-5 inline-flex items-center gap-1.5 font-mono text-[10px] tracking-[0.16em] text-orchid uppercase">
+              View component
+              <ArrowRightIcon className="h-3 w-3 transition-transform duration-200 group-hover:translate-x-0.5" />
+            </span>
+          </div>
+        </Link>
 
-      {/* ———— what's inside components ———— */}
-      <section aria-labelledby="groups-heading">
-        <div className="mb-2 flex items-baseline justify-between gap-4">
-          <h2
-            id="groups-heading"
-            className="font-display text-lg font-semibold tracking-tight text-frost"
-          >
-            Inside Components
-          </h2>
-          <p className="font-mono text-[10px] tracking-[0.2em] text-frost-faint uppercase">
-            {sectionCount} components
-          </p>
-        </div>
-
-        <ul>
-          {groups.map((group) => (
-            <li key={group.id} className="border-t border-veil-soft last:border-b">
-              <Link
-                href="/library"
-                className="group flex items-center justify-between gap-6 py-5 transition-colors duration-200"
-              >
-                <div className="min-w-0">
-                  <p className="font-display text-[17px] font-semibold tracking-tight text-frost transition-colors duration-200 group-hover:text-orchid">
-                    {group.name}
-                  </p>
-                  <p className="mt-1 text-[13px] leading-relaxed text-frost-dim">
-                    {group.blurb}
-                  </p>
-                </div>
-                <p className="shrink-0 font-mono text-[11px] text-frost-faint">
-                  {group.sections.length}{" "}
-                  <span className="tracking-[0.16em] uppercase">
-                    item{group.sections.length > 1 ? "s" : ""}
-                  </span>
+        {/* gallery — overlay-title image cards */}
+        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {rest.map(({ section, group }) => (
+            <Link
+              key={section.id}
+              href={`/section/${section.id}`}
+              className="panel panel-hover group relative aspect-[4/3] overflow-hidden"
+            >
+              <Image
+                src={`/thumbs/${section.id}.jpg`}
+                alt={`Preview of the ${section.title} section`}
+                fill
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                className="object-cover object-top transition-transform duration-500 group-hover:scale-[1.05]"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-abyss via-abyss/35 to-transparent" />
+              <div className="absolute inset-x-0 bottom-0 p-4">
+                <p className="font-mono text-[9px] tracking-[0.2em] text-frost/60 uppercase">
+                  {section.number} · {group.name}
                 </p>
-              </Link>
-            </li>
+                <h4 className="mt-1 font-display text-[15px] leading-snug font-semibold tracking-tight text-frost">
+                  {section.title}
+                </h4>
+              </div>
+            </Link>
           ))}
-        </ul>
+        </div>
       </section>
 
-      {/* ———— the one rule ———— */}
-      <aside className="border-l-2 border-orchid py-1 pl-5">
-        <p className="text-[14px] leading-[1.75] text-frost-dim">
-          <strong className="font-semibold text-frost">
-            One rule: one piece at a time.
-          </strong>{" "}
-          Don&apos;t paste three prompts in one message. Integrate one, check
-          it, then move to the next — it keeps errors isolated and easy to fix.
-        </p>
-      </aside>
+      {/* ———— text-only sections, kept narrow ———— */}
+      <div className="flex max-w-3xl flex-col gap-16">
+        {/* toolkit */}
+        <section aria-labelledby="home-toolkit">
+          <SectionHead
+            title="Toolkit"
+            meta={`${toolkitCount} tools`}
+            href="/toolkit"
+            cta="Open toolkit"
+          />
+          <div className="flex flex-col">
+            {toolkitItems.map((item) => (
+              <ListRow
+                key={item.id}
+                href={`/toolkit/${item.id}`}
+                eyebrow={`${item.number} · ${
+                  item.kind === "file" ? "Design file" : "Prompt"
+                }`}
+                title={item.title}
+                blurb={item.blurb}
+              />
+            ))}
+          </div>
+        </section>
+
+        {/* coming soon */}
+        <section aria-labelledby="home-soon">
+          <h2
+            id="home-soon"
+            className="mb-4 font-display text-lg font-semibold tracking-tight text-frost"
+          >
+            Coming soon
+          </h2>
+          <div className="flex flex-col">
+            {soonCategories.map((category) => (
+              <ListRow
+                key={category.id}
+                href={category.href}
+                eyebrow="Category"
+                title={category.name}
+                blurb={category.blurb}
+                trailing={
+                  <span className="rounded-full bg-orchid/12 px-2 py-0.5 font-mono text-[8px] tracking-[0.18em] text-orchid uppercase">
+                    Soon
+                  </span>
+                }
+              />
+            ))}
+          </div>
+        </section>
+
+        {/* the one rule */}
+        <aside className="border-l-2 border-orchid py-1 pl-5">
+          <p className="text-[14px] leading-[1.75] text-frost-dim">
+            <strong className="font-semibold text-frost">
+              One rule: one piece at a time.
+            </strong>{" "}
+            Don&apos;t paste three prompts in one message. Integrate one, check
+            it, then move to the next — it keeps errors isolated and easy to fix.
+          </p>
+        </aside>
+      </div>
     </div>
   );
 }

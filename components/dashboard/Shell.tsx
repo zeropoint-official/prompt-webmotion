@@ -2,22 +2,29 @@
 
 import { useState } from "react";
 import type { SearchEntry } from "@/lib/library";
-import Sidebar, { type SidebarGroup } from "./Sidebar";
+import Sidebar, { type SidebarGroup, type SidebarItem } from "./Sidebar";
 import { MenuIcon } from "./icons";
 
 type ShellProps = {
   groups: SidebarGroup[];
+  toolkitItems: SidebarItem[];
   searchItems: SearchEntry[];
   children: React.ReactNode;
 };
 
-export default function Shell({ groups, searchItems, children }: ShellProps) {
+export default function Shell({
+  groups,
+  toolkitItems,
+  searchItems,
+  children,
+}: ShellProps) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
     <div className="min-h-svh">
       <Sidebar
         groups={groups}
+        toolkitItems={toolkitItems}
         searchItems={searchItems}
         open={menuOpen}
         onClose={() => setMenuOpen(false)}

@@ -2,6 +2,7 @@ import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { groups } from "@/lib/sections";
 import { searchIndex } from "@/lib/library";
+import { toolkitItems } from "@/lib/toolkit";
 import { isMember } from "@/lib/members";
 import Shell from "@/components/dashboard/Shell";
 
@@ -27,8 +28,17 @@ export default async function DashboardLayout({
     })),
   }));
 
+  const sidebarToolkit = toolkitItems.map((item) => ({
+    id: item.id,
+    title: item.title,
+  }));
+
   return (
-    <Shell groups={sidebarGroups} searchItems={searchIndex}>
+    <Shell
+      groups={sidebarGroups}
+      toolkitItems={sidebarToolkit}
+      searchItems={searchIndex}
+    >
       {children}
     </Shell>
   );

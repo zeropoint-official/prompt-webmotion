@@ -1,19 +1,23 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { SearchEntry } from "@/lib/library";
 import SearchBox from "./SearchBox";
-import { CloseIcon } from "./icons";
+import { ChevronDownIcon, CloseIcon } from "./icons";
+
+export type SidebarItem = { id: string; title: string };
 
 export type SidebarGroup = {
   id: string;
   name: string;
-  sections: { id: string; title: string }[];
+  sections: SidebarItem[];
 };
 
 type SidebarProps = {
   groups: SidebarGroup[];
+  toolkitItems: SidebarItem[];
   searchItems: SearchEntry[];
   open: boolean;
   onClose: () => void;
@@ -65,8 +69,80 @@ function SoonBadge() {
   );
 }
 
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="mb-2 px-3 font-mono text-[8.5px] tracking-[0.26em] text-frost-faint uppercase">
+      {children}
+    </p>
+  );
+}
+
+type CategoryProps = {
+  href: string;
+  label: string;
+  count: number;
+  active: boolean;
+  open: boolean;
+  onToggle: () => void;
+  onNavigate: () => void;
+  children: React.ReactNode;
+};
+
+/** A top-level category whose children collapse into an accordion. */
+function Category({
+  href,
+  label,
+  count,
+  active,
+  open,
+  onToggle,
+  onNavigate,
+  children,
+}: CategoryProps) {
+  return (
+    <div>
+      <div
+        className={`flex items-center border-l-2 ${
+          active ? "border-orchid" : "border-transparent"
+        }`}
+      >
+        <Link
+          href={href}
+          onClick={onNavigate}
+          aria-current={active ? "page" : undefined}
+          className={`flex flex-1 items-center gap-2 py-1.5 pl-3 text-[13px] font-medium transition-colors duration-200 ${
+            active ? "text-orchid" : "text-frost-dim hover:text-frost"
+          }`}
+        >
+          <span className="truncate">{label}</span>
+          <span className="font-mono text-[10px] text-frost-faint">{count}</span>
+        </Link>
+        <button
+          type="button"
+          onClick={onToggle}
+          aria-expanded={open}
+          aria-label={`${open ? "Collapse" : "Expand"} ${label}`}
+          className="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center text-frost-faint transition-colors hover:text-frost"
+        >
+          <ChevronDownIcon
+            className={`h-3 w-3 transition-transform duration-200 ${
+              open ? "rotate-180" : ""
+            }`}
+          />
+        </button>
+      </div>
+      {open && (
+        <div className="mt-1 mb-1 ml-3 border-l border-veil-soft pl-1">
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function Sidebar({
   groups,
+  toolkitItems,
   searchItems,
   open,
   onClose,
@@ -75,6 +151,24 @@ export default function Sidebar({
 
   const componentsActive =
     pathname === "/library" || pathname.startsWith("/section");
+  const toolkitActive = pathname.startsWith("/toolkit");
+
+  const activeCategory = componentsActive
+    ? "components"
+    : toolkitActive
+      ? "toolkit"
+      : null;
+
+  // Single-open accordion. The active category opens itself; users can switch.
+  const [openId, setOpenId] = useState<string | null>(activeCategory);
+  useEffect(() => {
+    if (activeCategory) setOpenId(activeCategory);
+  }, [activeCategory]);
+
+  const toggle = (id: string) =>
+    setOpenId((current) => (current === id ? null : id));
+
+  const componentsCount = groups.reduce((n, g) => n + g.sections.length, 0);
 
   return (
     <>
@@ -126,18 +220,19 @@ export default function Sidebar({
             </NavLink>
           </ul>
 
-          {/* ——— Components (live) ——— */}
-          <div className="mt-5">
-            <ul className="flex flex-col">
-              <NavLink
-                href="/library"
-                active={componentsActive}
-                onNavigate={onClose}
-              >
-                Components
-              </NavLink>
-            </ul>
-            <div className="mt-1.5 ml-3 border-l border-veil-soft pl-1">
+          {/* ——— live categories ——— */}
+          <div className="mt-6">
+            <SectionLabel>Library</SectionLabel>
+
+            <Category
+              href="/library"
+              label="Components"
+              count={componentsCount}
+              active={componentsActive}
+              open={openId === "components"}
+              onToggle={() => toggle("components")}
+              onNavigate={onClose}
+            >
               {groups.map((group) => (
                 <div key={group.id} className="mt-2.5 first:mt-1">
                   <p className="pl-3 pb-1 font-mono text-[8.5px] tracking-[0.24em] text-frost-faint uppercase">
@@ -158,38 +253,70 @@ export default function Sidebar({
                   </ul>
                 </div>
               ))}
+            </Category>
+
+            <div className="mt-1.5">
+              <Category
+                href="/toolkit"
+                label="Toolkit"
+                count={toolkitItems.length}
+                active={toolkitActive}
+                open={openId === "toolkit"}
+                onToggle={() => toggle("toolkit")}
+                onNavigate={onClose}
+              >
+                <ul className="flex flex-col">
+                  {toolkitItems.map((item) => (
+                    <NavLink
+                      key={item.id}
+                      href={`/toolkit/${item.id}`}
+                      active={pathname === `/toolkit/${item.id}`}
+                      onNavigate={onClose}
+                      nested
+                    >
+                      {item.title}
+                    </NavLink>
+                  ))}
+                </ul>
+              </Category>
             </div>
           </div>
 
-          {/* ——— upcoming categories + guide ——— */}
-          <ul className="mt-5 flex flex-col">
-            <NavLink
-              href="/hero-animations"
-              active={pathname.startsWith("/hero-animations")}
-              onNavigate={onClose}
-              badge={<SoonBadge />}
-            >
-              Hero Animations
-            </NavLink>
-            <NavLink
-              href="/templates"
-              active={pathname.startsWith("/templates")}
-              onNavigate={onClose}
-              badge={<SoonBadge />}
-            >
-              Website Templates
-            </NavLink>
-          </ul>
+          {/* ——— upcoming categories ——— */}
+          <div className="mt-6">
+            <SectionLabel>Coming soon</SectionLabel>
+            <ul className="flex flex-col">
+              <NavLink
+                href="/hero-animations"
+                active={pathname.startsWith("/hero-animations")}
+                onNavigate={onClose}
+                badge={<SoonBadge />}
+              >
+                Hero Animations
+              </NavLink>
+              <NavLink
+                href="/templates"
+                active={pathname.startsWith("/templates")}
+                onNavigate={onClose}
+                badge={<SoonBadge />}
+              >
+                Website Templates
+              </NavLink>
+            </ul>
+          </div>
 
-          <ul className="mt-5 flex flex-col">
-            <NavLink
-              href="/guide"
-              active={pathname.startsWith("/guide")}
-              onNavigate={onClose}
-            >
-              Guide
-            </NavLink>
-          </ul>
+          {/* ——— learn ——— */}
+          <div className="mt-6 border-t border-veil-soft pt-5">
+            <ul className="flex flex-col">
+              <NavLink
+                href="/guide"
+                active={pathname.startsWith("/guide")}
+                onNavigate={onClose}
+              >
+                Guide
+              </NavLink>
+            </ul>
+          </div>
         </nav>
 
         <p className="border-t border-veil-soft px-5 py-4 font-mono text-[9px] tracking-[0.2em] text-frost-faint uppercase">
