@@ -58,8 +58,33 @@ export const toolkitItems: ToolkitItem[] = [
     thumb: "/thumbs/process-steps.jpg",
   },
   {
-    id: "scroll-video",
+    id: "hero-video-masterprompt",
     number: "T2",
+    title: "Hero Video Master Prompt",
+    kind: "prompt",
+    promptFile: "hero-video-masterprompt",
+    tags: ["ChatGPT / any LLM", "Start + end frames", "Kling · Veo / Flow"],
+    blurb:
+      "A master prompt you paste into ChatGPT to get three ready-to-use prompts — start frame, end frame, and the motion between them — for a scroll-scrubbed hero video.",
+    whatItIs:
+      "The prompt that writes your prompts. Scroll-driven hero videos (the T3 effect) live or die on continuity: the start and end frames have to read as two moments of the same unbroken shot. Writing those by hand is fiddly, so this is a 'master prompt' you hand to a chatbot instead. You paste it into ChatGPT (or any capable LLM), fill in a few blanks describing the shot you want, and it returns exactly three copy-paste blocks — a START FRAME still prompt, an END FRAME still prompt, and an ANIMATION motion prompt — engineered to stay perfectly consistent across subject, camera, lighting and palette.",
+    perfectFor:
+      "Producing the source footage for a scroll-driven background video without being a prompt engineer yourself. Any hero moment built around a single continuous transformation — a product forming, a camera pushing in, a logo assembling, a landscape shifting from day to night.",
+    use: [
+      "Open this prompt, copy the whole thing, and paste it into a chatbot of your choice — ChatGPT works best, but any capable LLM is fine.",
+      "Edit only the bits inside the {{ }} brackets to describe your shot (subject, start state, end state, camera move, setting, lighting, mood). Leave any blank you don't care about — it will decide for you. Optionally attach reference image(s) and it will match their design.",
+      "Send it. The chatbot returns three labelled blocks: START FRAME, END FRAME, and ANIMATION — nothing else.",
+      "Take the START and END frame prompts to an image-generation tool (ChatGPT's own image generator, Midjourney, Flux, etc.) and generate the two stills.",
+      "Feed those two stills, plus the ANIMATION prompt, into a start-+-end-frame video model (Kling or Google Veo / Flow) to produce the clip.",
+      "Bring the finished video back here and run the T3 'Scroll-Driven Background Video' prompt to wire it up as a scroll-scrubbed hero.",
+    ],
+    goodToKnow:
+      "The whole point is continuity — it restates the shared visual details in both frame prompts so the two stills look like the same shot, and keeps the motion to ONE move with no cuts (which is what scroll-scrubbing needs). It deliberately keeps text, logos and watermarks out of the frames; add your branding on the website afterwards where it stays crisp. If you attach reference images, treat them as the source of truth and tell your image tool to generate each frame from that reference.",
+    thumb: "/thumbs/aperture-reveal.jpg",
+  },
+  {
+    id: "scroll-video",
+    number: "T3",
     title: "Scroll-Driven Background Video",
     kind: "prompt",
     promptFile: "scroll-video",
@@ -83,7 +108,7 @@ export const toolkitItems: ToolkitItem[] = [
   },
   {
     id: "design-system",
-    number: "T3",
+    number: "T4",
     title: "Section Design System",
     kind: "file",
     downloadPath: "/SECTION-DESIGN-SYSTEM.md",
