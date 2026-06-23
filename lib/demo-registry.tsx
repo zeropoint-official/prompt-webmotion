@@ -5,6 +5,7 @@ import ScatterHeroDemo from "@/components/demos/scatter-hero-demo";
 import PageTransitionDemo from "@/components/demos/page-transition-demo";
 import StaggerTestimonialsDemo from "@/components/demos/stagger-testimonials-demo";
 import FanOutCardDemo from "@/components/demos/fan-out-card-demo";
+import ParallaxStackingProjectsDemo from "@/components/demos/parallax-stacking-projects-demo";
 import ApertureRevealHeroDemo from "@/components/demos/aperture-reveal-hero-demo";
 import StackingCardsDemo from "@/components/demos/stacking-cards-demo";
 import FeatureDemo from "@/components/demos/before-after-demo";
@@ -68,6 +69,12 @@ export const demoRegistry: Record<string, DemoEntry> = {
     Component: FanOutCardDemo,
     frame: "centered",
     background: "#1f1a15",
+  },
+  "parallax-stacking-projects": {
+    Component: ParallaxStackingProjectsDemo,
+    frame: "runway",
+    background: "#f4f3ee",
+    hint: "Scroll — each project peels away to reveal the next",
   },
   "aperture-reveal-hero": {
     Component: ApertureRevealHeroDemo,

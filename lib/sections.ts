@@ -10,6 +10,8 @@ export type Section = {
   perfectFor: string;
   prepare: string[];
   goodToKnow?: string;
+  /** optional per-section Step 1 message; falls back to CUSTOMIZATION_TEMPLATE */
+  customize?: string;
 };
 
 export type Group = {
@@ -121,6 +123,35 @@ export const groups: Group[] = [
         ],
         goodToKnow:
           "On touch devices (no hover) the first tap fans the prints instead of following the link, so phone users still see the effect. The fan offsets are calibrated for a ~300px-wide card; if you change the card width and the prints fan too far or not enough, pass your own `fan` offsets via the prop. Note the card has no clipping, so the prints fan OUTSIDE its bounds — leave breathing room around it in your layout.",
+      },
+      {
+        id: "parallax-stacking-projects",
+        number: "1.6",
+        title: "Parallax Stacking Projects",
+        promptFile: "parallax-stacking-projects",
+        tags: ["GSAP + ScrollTrigger", "Scroll-peel stack", "3–5 projects"],
+        whatItIs:
+          "A scroll-driven project stack inside one framed window: each full-screen project image peels downward as you scroll to reveal the next, while its title, year and tags stay pinned. The last project holds as the final frame. On desktop the image rests dimmed and brightens on hover.",
+        perfectFor:
+          "A portfolio or “selected work” section with 3–5 flagship projects — studios, agencies, web designers, architecture. A more cinematic alternative to a project grid.",
+        prepare: [
+          "3–5 projects, each with: a wide cover image, a title, a year, optional tags, and a link",
+          "A section heading (e.g. “Selected Work”)",
+        ],
+        goodToKnow:
+          "Built on GSAP + ScrollTrigger and feels best with Lenis smooth scroll (optional). The whole effect relies on `contain: paint` clipping each card, plus three `.proj-*` global CSS classes for the desktop resting opacity and hover — both are included in the prompt. Mobile automatically switches to a half-height, centered-image layout. Reduced motion is handled by skipping Lenis at the page level; the scroll-scrub itself still runs.",
+        customize: `Integrate the Parallax Stacking Projects section into my site, placing it [where on the page — e.g. right after my hero].
+
+Use these projects (each one peels away on scroll to reveal the next — 3–5 works best, and the last one is the resting frame):
+1. [Title] · [Year] · tags: [Web Design, Branding] · opens [https://…] · cover image: [/projects/one.jpg]
+2. [Title] · [Year] · tags: [Web Development] · opens [https://…] · cover image: [/projects/two.jpg]
+3. [Title] · [Year] · tags: [E-commerce] · opens [https://…] · cover image: [/projects/three.jpg]
+
+Use wide / landscape cover images (portrait crops hard). Section heading: [e.g. "Selected Work"].
+Theme: [light / dark]. Match the fonts to my site (set --font-monument / --font-geist-mono, or keep the fallbacks).
+Install gsap if it isn't already, and add the required .proj-* classes to my global stylesheet.
+
+[PASTE THE FULL SECTION PROMPT HERE]`,
       },
     ],
   },

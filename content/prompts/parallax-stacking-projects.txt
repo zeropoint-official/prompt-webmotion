@@ -1,0 +1,696 @@
+You are given a task to integrate an existing React component in the codebase.
+
+The codebase should support:
+- Next.js (App Router or Pages)
+- Tailwind CSS
+- TypeScript
+
+If it doesn't, provide instructions on how to install Tailwind or TypeScript.
+
+Determine the default path for components. If it is not /components, provide instructions
+on why it is important to create that folder.
+
+Copy-paste this component to /components/ParallaxStackingProjects.tsx:
+
+```tsx
+"use client";
+
+import React, { useRef, useEffect, useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger);
+}
+
+/* ── Types ── */
+
+export interface StackProject {
+  id: string;
+  year: string;
+  title: string;
+  href: string;
+  image: string;
+  description?: string;
+  tags?: string[];
+  tech?: string[];
+  linkLabel?: string;
+}
+
+interface ParallaxStackingProjectsProps {
+  projects: StackProject[];
+  theme?: "dark" | "light";
+}
+
+/* giats.me projects treatment — a solid dark fill behind each card's image. On
+   giats this dark layer is a site-wide WebGL fluid shader; here a solid fill keeps
+   the frosted veil (and the rounded corners) reading dark, and the light card copy
+   legible, on either theme. */
+const GIATS_BG = "#0a0a0a";
+
+/* ── Theme tokens — only the surrounding surface differs by theme; the cards are
+   always dark-backed (GIATS_BG) with light copy. ── */
+
+const THEMES = {
+  dark: { pageBg: "#000", frame: "#000" },
+  light: { pageBg: "#f4f3ee", frame: "#f4f3ee" },
+} as const;
+
+/* ── Component ── */
+
+export default function ParallaxStackingProjects({
+  projects,
+  theme = "dark",
+}: ParallaxStackingProjectsProps) {
+  const t = THEMES[theme];
+  const rootRef = useRef<HTMLDivElement>(null);
+  const canvasRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const [isMobile, setIsMobile] = useState(false);
+  const [windowHeight, setWindowHeight] = useState(0);
+
+  useEffect(() => {
+    const update = () => {
+      setIsMobile(window.innerWidth < 768);
+      setWindowHeight(window.innerHeight);
+    };
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
+
+  // Setup GSAP animations — matching giats.me exactly
+  useEffect(() => {
+    if (typeof window === "undefined" || !windowHeight) return;
+
+    const root = rootRef.current;
+    if (!root) return;
+
+    const cardHeight = isMobile ? windowHeight * 0.5 : windowHeight;
+
+    const timer = setTimeout(() => {
+      const ctx = gsap.context(() => {
+        // Animate each canvas EXCEPT the last one (slice 0 to -1)
+        canvasRefs.current.slice(0, -1).forEach((canvas, index) => {
+          if (!canvas) return;
+
+          gsap.set(canvas, { yPercent: 0 });
+
+          gsap.timeline({
+            scrollTrigger: {
+              trigger: root,
+              start: `top+=${cardHeight * index}`,
+              end: `+=${cardHeight * (projects.length - 1)}`,
+              scrub: true,
+              invalidateOnRefresh: true,
+            },
+          }).to(canvas, {
+            yPercent: 100,
+            ease: "none",
+          });
+        });
+      }, root);
+
+      return () => ctx.revert();
+    }, 200);
+
+    return () => {
+      clearTimeout(timer);
+      ScrollTrigger.getAll().forEach((t) => t.kill());
+    };
+  }, [windowHeight, isMobile, projects.length]);
+
+  // Calculate projectsWrap height — giats.me formula
+  const getProjectsWrapHeight = (index: number): string => {
+    if (isMobile) {
+      return index === projects.length - 1
+        ? "100svh"
+        : `${100 + 50 * index}svh`;
+    }
+    return index === projects.length - 1
+      ? "200svh"
+      : `${200 + 100 * index}svh`;
+  };
+
+  // Calculate projectsWrap top position
+  const getProjectsWrapTop = (index: number): string => {
+    if (isMobile) {
+      if (index === projects.length - 1) return "-50svh";
+      return index === 0 ? "0px" : "-50svh";
+    }
+    return index === 0 ? "0px" : "-100svh";
+  };
+
+  const padIndex = (i: number) => String(i + 1).padStart(2, "0");
+
+  // Round only the outer corners of the whole stack: top corners on the first
+  // background image, bottom corners on the last. Applied to both the image and
+  // the glass veil so they round together.
+  const cornerRadius = (i: number) => {
+    const r = isMobile ? "0.75rem" : "1.5rem";
+    return {
+      borderTopLeftRadius: i === 0 ? r : undefined,
+      borderTopRightRadius: i === 0 ? r : undefined,
+      borderBottomLeftRadius: i === projects.length - 1 ? r : undefined,
+      borderBottomRightRadius: i === projects.length - 1 ? r : undefined,
+    };
+  };
+
+  return (
+    <section
+      ref={rootRef}
+      style={{
+        position: "relative",
+        width: "100%",
+        display: "block",
+        backgroundColor: t.pageBg,
+        paddingLeft: isMobile ? "1rem" : "clamp(1rem, 4vw, 5rem)",
+        paddingRight: isMobile ? "1rem" : "clamp(1rem, 4vw, 5rem)",
+        paddingTop: 0,
+        paddingBottom: isMobile ? "2rem" : "clamp(48px, 8vh, 120px)",
+        contain: "paint",
+      }}
+    >
+      {/* Inner Container */}
+      <div
+        style={{
+          position: "relative",
+          width: "100%",
+          display: "block",
+          margin: "0 auto",
+          borderRadius: isMobile ? "0.75rem" : "1.5rem",
+          boxShadow: `0 0 0 ${isMobile ? "0.75rem" : "1.5rem"} ${t.frame}`,
+        }}
+      >
+        {projects.map((project, index) => (
+          <Link
+            key={project.id}
+            href={project.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`View ${project.title}`}
+            className="proj-card"
+            style={{
+              display: "block",
+              position: "relative",
+              width: "100%",
+              height: isMobile ? "50svh" : "100svh",
+              padding: 0,
+              cursor: "pointer",
+              contain: "paint", // CRUCIAL — clips both canvas AND sticky content
+              // Dark surface the image sits on at rest (giats has its fluid shader
+              // here); the glass veil over the image provides the dimming, and this
+              // dark backing is what keeps the frosted veil reading dark (not grey)
+              // on both themes. Cards are square + gapless so the stack reads as one
+              // continuous panel — only the first/last background image rounds its
+              // outer corners.
+              backgroundColor: GIATS_BG,
+            }}
+          >
+            {/* ── Projects Wrap — the pinned copy, painted in front of the canvas ──
+                This div is position: absolute and extends FAR beyond the card
+                (via calculated height/top). The sticky child inside pins to the
+                viewport while scrolling. Because the parent card has contain: paint,
+                the sticky content is only VISIBLE within the card's bounds — creating
+                the illusion that one front card swaps content as backgrounds change. */}
+            <div
+              style={{
+                position: "absolute",
+                left: 0,
+                right: 0,
+                width: "100%",
+                pointerEvents: "none",
+                // no zIndex / willChange here — keeping this layer free of a
+                // stacking context lets the title's mix-blend reach the canvas
+                height: getProjectsWrapHeight(index),
+                top: getProjectsWrapTop(index),
+              }}
+            >
+              {/* Sticky Container — stays fixed while scrolling */}
+              <div
+                style={{
+                  position: "sticky",
+                  top: isMobile ? "25vh" : "0",
+                  width: "100%",
+                  height: isMobile ? "50svh" : "100svh",
+                  display: "flex",
+                  alignItems: "center",
+                }}
+              >
+                {isMobile ? (
+                  /* ── Mobile layout ── */
+                  <div
+                    style={{
+                      position: "relative",
+                      width: "100%",
+                      height: "100%",
+                    }}
+                  >
+                    {/* Watermark number */}
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: 12,
+                        right: 16,
+                        fontFamily: "var(--font-monument), sans-serif",
+                        fontWeight: 800,
+                        fontSize: 100,
+                        lineHeight: 1,
+                        color: "rgba(255,255,255,0.07)",
+                        userSelect: "none",
+                        pointerEvents: "none",
+                      }}
+                    >
+                      {padIndex(index)}
+                    </div>
+
+                    {/* Front image */}
+                    <div
+                      style={{
+                        position: "absolute",
+                        width: "83%",
+                        top: "50%",
+                        left: "50%",
+                        transform: "translate(-50%, -55%)",
+                        aspectRatio: "16/9",
+                      }}
+                    >
+                      <Image
+                        src={project.image}
+                        alt={project.title}
+                        fill
+                        className="object-cover"
+                        style={{
+                          borderRadius: "0.5rem",
+                          boxShadow: "0 4px 30px rgba(0,0,0,0.5)",
+                        }}
+                        sizes="83vw"
+                      />
+                    </div>
+
+                    {/* Bottom label */}
+                    <div
+                      style={{
+                        position: "absolute",
+                        bottom: 0,
+                        width: "100%",
+                        height: "100%",
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        justifyContent: "flex-end",
+                        paddingBottom: 24,
+                        gap: 4,
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontFamily: "var(--font-geist-mono), monospace",
+                          fontSize: 10,
+                          letterSpacing: "0.25em",
+                          textTransform: "uppercase",
+                          color: "rgba(255,255,255,0.7)",
+                        }}
+                      >
+                        {project.year}
+                      </span>
+                      <h3
+                        style={{
+                          fontFamily: "var(--font-monument), sans-serif",
+                          fontWeight: 800,
+                          fontSize: 18,
+                          color: "#ffffff",
+                          textAlign: "center",
+                          margin: 0,
+                          padding: "0 16px",
+                        }}
+                      >
+                        {project.title}
+                      </h3>
+                    </div>
+                  </div>
+                ) : (
+                  /* ── Desktop layout ── */
+                  <div
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      padding: "0 clamp(2rem, 8vw, 8rem)",
+                      display: "grid",
+                      gridTemplateColumns: "1fr 1fr",
+                      alignItems: "center",
+                      boxSizing: "border-box",
+                    }}
+                  >
+                    {/* Left: title & meta */}
+                    <div
+                      className="proj-text-group"
+                      style={{
+                        position: "relative",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 16,
+                      }}
+                    >
+                      {/* Watermark number */}
+                      <div
+                        style={{
+                          position: "absolute",
+                          top: "-3rem",
+                          left: "-1rem",
+                          fontFamily: "var(--font-monument), sans-serif",
+                          fontWeight: 800,
+                          fontSize: "clamp(150px, 18vw, 260px)",
+                          lineHeight: 1,
+                          /* white tones, legible on any background — theme colour
+                             ignored here */
+                          color: "rgba(255,255,255,0.07)",
+                          userSelect: "none",
+                          pointerEvents: "none",
+                        }}
+                      >
+                        {padIndex(index)}
+                      </div>
+
+                      <span
+                        style={{
+                          fontFamily: "var(--font-geist-mono), monospace",
+                          fontSize: 11,
+                          letterSpacing: "0.3em",
+                          textTransform: "uppercase",
+                          color: "rgba(255,255,255,0.7)",
+                        }}
+                      >
+                        {project.year}
+                      </span>
+
+                      <h3
+                        style={{
+                          fontFamily: "var(--font-monument), sans-serif",
+                          fontWeight: 800,
+                          fontSize: "clamp(2rem, 5vw, 5rem)",
+                          lineHeight: 0.9,
+                          textTransform: "uppercase",
+                          color: "#ffffff",
+                          margin: 0,
+                          mixBlendMode: "difference", // inverts against the photo behind it
+                        }}
+                      >
+                        {project.title}
+                      </h3>
+
+                      {project.tags && project.tags.length > 0 && (
+                        <div
+                          style={{
+                            display: "flex",
+                            gap: 8,
+                            flexWrap: "wrap",
+                            marginTop: 4,
+                          }}
+                        >
+                          {project.tags.map((tag) => (
+                            <span
+                              key={tag}
+                              style={{
+                                fontFamily:
+                                  "var(--font-geist-mono), monospace",
+                                fontSize: 10,
+                                letterSpacing: "0.1em",
+                                textTransform: "uppercase",
+                                padding: "4px 12px",
+                                borderRadius: 999,
+                                border: "1px solid rgba(255,255,255,0.3)",
+                                color: "rgba(255,255,255,0.85)",
+                              }}
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Right: image preview */}
+                    <div
+                      style={{
+                        position: "absolute",
+                        right: "clamp(2rem, 8vw, 8rem)",
+                        width: "48%",
+                        aspectRatio: "1920/900",
+                      }}
+                    >
+                      <Image
+                        src={project.image}
+                        alt={project.title}
+                        fill
+                        className="object-cover"
+                        style={{
+                          borderRadius: "0.75rem",
+                          boxShadow: "0 8px 60px rgba(0,0,0,0.6)",
+                        }}
+                        sizes="50vw"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* ── Canvas — background image that peels downward ── */}
+            <div
+              ref={(el) => {
+                canvasRefs.current[index] = el;
+              }}
+              className="proj-canvas"
+              style={{
+                position: "absolute",
+                inset: 0,
+                zIndex: -1, // sit behind the pinned copy so the title can mix-blend against it
+                willChange: "transform",
+              }}
+            >
+              <Image
+                src={project.image}
+                alt={project.title}
+                fill
+                className="object-cover"
+                style={cornerRadius(index)}
+                sizes="100vw"
+                priority={index < 2}
+              />
+              {/* Glassy dark veil — fades on hover (desktop); on touch there's no
+                  hover so it simply stays, dimming the background image. */}
+              <div
+                className="proj-overlay"
+                style={{ position: "absolute", inset: 0, ...cornerRadius(index) }}
+              />
+            </div>
+          </Link>
+        ))}
+      </div>
+    </section>
+  );
+}
+```
+
+demo.tsx
+```tsx
+import ParallaxStackingProjects, {
+  type StackProject,
+} from "@/components/ParallaxStackingProjects";
+
+const PROJECTS: StackProject[] = [
+  {
+    id: "aurora",
+    year: "2024",
+    title: "Aurora Studio",
+    href: "https://example.com",
+    image: "/projects/aurora.jpg",
+    tags: ["Web Design", "Branding"],
+  },
+  {
+    id: "monolith",
+    year: "2024",
+    title: "Monolith",
+    href: "https://example.com",
+    image: "/projects/monolith.jpg",
+    tags: ["Web Development"],
+  },
+  {
+    id: "atelier",
+    year: "2024",
+    title: "Atelier Nord",
+    href: "https://example.com",
+    image: "/projects/atelier.jpg",
+    tags: ["E-commerce", "Web Design"],
+  },
+  {
+    id: "horizon",
+    year: "2024",
+    title: "Horizon House",
+    href: "https://example.com",
+    image: "/projects/horizon.jpg",
+    tags: ["Web Design"],
+  },
+];
+
+export default function Showcase() {
+  return (
+    <section style={{ background: "#f4f3ee" }}>
+      {/* Optional section heading — drop or restyle to match your site */}
+      <div
+        style={{
+          padding:
+            "clamp(4rem, 10vw, 10rem) clamp(1.5rem, 8vw, 8rem) clamp(2rem, 4vw, 4rem)",
+        }}
+      >
+        <h2
+          style={{
+            fontFamily: "var(--font-monument), sans-serif",
+            fontWeight: 800,
+            fontSize: "clamp(3rem, 10vw, 10rem)",
+            lineHeight: 0.9,
+            letterSpacing: "-0.02em",
+            color: "#161616",
+            textTransform: "uppercase",
+            margin: 0,
+          }}
+        >
+          Selected
+          <br />
+          <span style={{ color: "rgba(22,22,22,0.18)" }}>Work</span>
+        </h2>
+      </div>
+
+      <ParallaxStackingProjects projects={PROJECTS} theme="light" />
+    </section>
+  );
+}
+```
+
+Install NPM dependencies:
+```bash
+npm i gsap
+```
+
+Optional — for the smooth, weighted scroll feel the effect is designed around, also wire up Lenis
+(the scrub works on native scroll too, it just feels less buttery):
+```bash
+npm i lenis
+```
+
+CSS variables / classes to set in your global stylesheet (or swap with hardcoded values in the component):
+```css
+/* REQUIRED — these .proj-* rules carry the glass veil + desktop hover. Without
+   them the background image won't sit behind the frosted dark veil at rest, the
+   veil won't fade on hover (desktop), and the year/tag copy won't flip to dark. */
+.proj-canvas {
+  will-change: transform;
+  opacity: 1;                   /* image at full brightness; the glass veil dims it */
+}
+/* Glassy dark veil over the background image — visible at rest, fades on hover */
+.proj-overlay {
+  background: rgba(8, 8, 8, 0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: opacity 0.6s cubic-bezier(0.4, 0, 0.1, 1);
+  will-change: opacity;
+}
+.proj-card:hover .proj-overlay {
+  opacity: 0;                   /* veil fades to reveal the sharp, bright image */
+}
+.proj-text-group span {
+  transition: all 0.6s cubic-bezier(0.4, 0, 0.1, 1);
+  text-shadow: none;
+}
+.proj-card:hover .proj-text-group span {
+  color: #161616 !important;    /* year/tag copy flips to dark over the bright image */
+  text-shadow: 2px 2px 2px #f4f3ee;
+}
+
+/* OPTIONAL fonts — the component reads these with safe fallbacks. Set them to
+   your own faces, or leave them unset and they fall back to sans-serif / monospace.
+   --font-monument  → the big titles + watermark numbers
+   --font-geist-mono → the small year / tag labels */
+:root {
+  /* --font-monument: "Your Display Font", sans-serif; */
+  /* --font-geist-mono: "Your Mono Font", monospace; */
+}
+```
+
+If you use Lenis, wire it once at the page/layout level (skip it for users who prefer reduced motion):
+```tsx
+"use client";
+import { useEffect } from "react";
+import Lenis from "lenis";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+export function SmoothScroll({ children }: { children: React.ReactNode }) {
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const lenis = new Lenis({ lerp: 0.1, smoothWheel: true });
+    lenis.on("scroll", ScrollTrigger.update);
+    const tick = (time: number) => lenis.raf(time * 1000);
+    gsap.ticker.add(tick);
+    gsap.ticker.lagSmoothing(0);
+    return () => { gsap.ticker.remove(tick); lenis.destroy(); };
+  }, []);
+  return <>{children}</>;
+}
+```
+
+Implementation Guidelines
+ 1. Analyze the component structure and identify all required dependencies
+ 2. Review the component's arguments (the `projects` array and the `theme` prop) and its responsive state
+ 3. Identify any required context providers or hooks and install them (GSAP is required; Lenis is optional)
+ 4. Questions to Ask
+  - How many projects? 3–5 works best (the effect needs at least 2; the last one is the resting frame).
+  - For each project: a wide cover image, a title, a year, optional tags, and a link (href).
+  - Light theme or dark theme? (`theme="light"` for a warm off-white surface, `theme="dark"` for black.)
+  - Is GSAP already installed? (check package.json before running npm install)
+  - Do you want the smooth-scroll feel? If so, is Lenis already wired at the layout level, or should I add it?
+  - Should the cards link out (new tab) or be non-clickable for now? (set href to "#" for non-clickable)
+
+Steps to integrate
+ 0. Copy-paste the component to /components/ParallaxStackingProjects.tsx
+ 1. Install gsap if not already present (and lenis if you want the smooth-scroll feel)
+ 2. Add the required .proj-* classes to your global stylesheet (globals.css)
+ 3. Put your project cover images in /public and pass them via each project's `image`
+ 4. Render <ParallaxStackingProjects projects={...} theme="light" /> where you want the section, optionally under a heading (see demo)
+ 5. Optionally set --font-monument / --font-geist-mono to your fonts; otherwise they fall back cleanly
+ 6. Scroll the section top-to-bottom and confirm each project peels away to reveal the next, with the last one holding
+
+Critical rules — do not violate these or the effect will break or look wrong:
+ - Every card AND the outer section use contain: paint. This is LOAD-BEARING — it clips both the
+   peeling background "canvas" and the sticky copy to each card's own box, which is what creates the
+   single-framed-window illusion. Remove it and the sticky content bleeds across the whole page and
+   the peel reveals nothing.
+ - The LAST card's canvas is intentionally NOT animated (the code animates canvasRefs.slice(0, -1)).
+   It's the final resting frame. Don't "fix" this by animating all of them.
+ - The .proj-* global CSS classes are required (see CSS block). They live in globals.css, not inline —
+   without them the frosted glass veil won't show at rest or fade on hover, and the year/tag copy
+   won't flip to dark.
+ - The glass veil (.proj-overlay) uses backdrop-filter: blur — keep the -webkit- prefix for Safari,
+   and keep it as the LAST child of the canvas (above the <Image>) so it actually frosts the image.
+ - The desktop title uses mixBlendMode: "difference" to invert against the photo. For that to work the
+   canvas sits at zIndex: -1 and the pinned copy's layers (projectsWrap / sticky / text-group) must NOT
+   create their own stacking context — that's why they have no z-index, no transform, and no will-change.
+   If you re-add any of those to that chain (or wrap the title in a new transformed/opacity layer), the
+   blend will stop reaching the image and the title will look flat.
+ - Do NOT change the per-card height (100svh desktop / 50svh mobile), the projectsWrap height/top
+   formulas, or the ScrollTrigger start/end math — together they control how long each card stays
+   pinned and when each peel starts/ends. "Simplifying" them desyncs the stack.
+ - Keep the mobile branch (window.innerWidth < 768): it uses half-height cards (cardHeight = innerHeight * 0.5)
+   and a centered front image. Don't force the desktop layout onto mobile — the scroll math depends on the
+   half-height. The glass veil is shared with desktop; on touch there's no hover, so it stays on permanently
+   (which is the intended mobile dimming).
+ - Cards are square and gapless (no per-card border-radius, no margin between them) so the stack reads as
+   one continuous framed panel; only the first background image rounds its top corners and the last rounds
+   its bottom corners (see cornerRadius()). Apply the same radius to the image AND the .proj-overlay so they
+   round together — otherwise the square veil pokes past the rounded image corners.
+ - Use a wide cover image per project (the desktop background canvas is full-bleed and the right-hand
+   preview is ~1920/900). Portrait images will crop hard.
+ - The watermark number and the projectsWrap are pointerEvents: none so they never block the card's
+   link. Keep that, or clicks on the project will be swallowed.

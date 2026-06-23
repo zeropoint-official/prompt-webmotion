@@ -161,3 +161,32 @@ body {
   background: rgba(226, 109, 248, 0.3);
   border-radius: 3px;
 }
+
+/* ——— Parallax Stacking Projects (1.6) — glass veil + desktop hover ——— */
+.proj-canvas {
+  will-change: transform;
+  opacity: 1; /* image at full brightness; the glass veil does the dimming */
+}
+
+/* Glassy dark veil over the background image, visible at rest, fades on hover */
+.proj-overlay {
+  background: rgba(8, 8, 8, 0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: opacity 0.6s cubic-bezier(0.4, 0, 0.1, 1);
+  will-change: opacity;
+}
+
+.proj-card:hover .proj-overlay {
+  opacity: 0;
+}
+
+.proj-text-group span {
+  transition: all 0.6s cubic-bezier(0.4, 0, 0.1, 1);
+  text-shadow: none;
+}
+
+.proj-card:hover .proj-text-group span {
+  color: #161616 !important;
+  text-shadow: 2px 2px 2px #f4f3ee;
+}

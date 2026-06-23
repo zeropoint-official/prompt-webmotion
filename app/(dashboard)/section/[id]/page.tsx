@@ -54,6 +54,7 @@ export default async function SectionPage({
   const { section, group } = entry;
   const { prev, next } = getSectionNeighbours(id);
   const prompt = readPrompt(section.promptFile);
+  const customization = section.customize ?? CUSTOMIZATION_TEMPLATE;
 
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-8">
@@ -105,13 +106,13 @@ export default async function SectionPage({
             Step 1 — your customization message
           </span>
           <CopyButton
-            text={CUSTOMIZATION_TEMPLATE}
+            text={customization}
             label="Copy template"
             copiedLabel="Copied — fill in the brackets"
           />
         </div>
         <pre className="prompt-scroll overflow-x-auto px-6 py-5 font-mono text-[12px] leading-[1.85] whitespace-pre text-frost-dim">
-          {CUSTOMIZATION_TEMPLATE}
+          {customization}
         </pre>
       </div>
 
