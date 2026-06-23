@@ -1,0 +1,188 @@
+You are given a task to integrate an existing React component in the codebase.
+
+The codebase should support:
+- Next.js (App Router or Pages)
+- Tailwind CSS
+- TypeScript
+
+If it doesn't, provide instructions on how to install Tailwind or TypeScript.
+
+Determine the default path for components. If it is not /components, provide instructions
+on why it is important to create that folder.
+
+Copy-paste this component to /components/ScrollTextReveal.tsx:
+
+```tsx
+"use client";
+
+import { useRef } from "react";
+import {
+  motion,
+  useScroll,
+  useTransform,
+  type MotionValue,
+} from "framer-motion";
+
+type ScrollTextRevealProps = {
+  /** The paragraph that brightens word-by-word as it scrolls through view */
+  text: string;
+  /** Small uppercase label above the paragraph, e.g. "Our Philosophy" */
+  eyebrow?: string;
+  /** Dim opacity each word starts at (0–1) */
+  dimOpacity?: number;
+};
+
+export default function ScrollTextReveal({
+  text,
+  eyebrow,
+  dimOpacity = 0.15,
+}: ScrollTextRevealProps) {
+  const targetRef = useRef<HTMLParagraphElement>(null);
+
+  // The reveal runs from when the paragraph's top hits 90% of the viewport
+  // until it reaches 25% — a comfortable, readable scrub window.
+  const { scrollYProgress } = useScroll({
+    target: targetRef,
+    offset: ["start 0.9", "start 0.25"],
+  });
+
+  const words = text.split(" ");
+
+  return (
+    <section
+      className="flex w-full justify-center px-6 py-[40vh]"
+      style={{ background: "var(--color-bg, #0a0a0a)" }}
+    >
+      <div className="max-w-3xl">
+        {eyebrow && (
+          <p
+            className="mb-8"
+            style={{
+              fontFamily: "monospace",
+              fontSize: "0.7rem",
+              textTransform: "uppercase",
+              letterSpacing: "0.28em",
+              color: "var(--color-accent, #d4b46a)",
+            }}
+          >
+            {eyebrow}
+          </p>
+        )}
+
+        <p
+          ref={targetRef}
+          className="flex flex-wrap text-2xl font-medium leading-snug md:text-4xl md:leading-snug"
+          style={{
+            fontFamily: "var(--font-display, inherit)",
+            color: "var(--color-text, #f5f5f5)",
+          }}
+        >
+          {words.map((word, i) => {
+            const start = i / words.length;
+            const end = start + 1 / words.length;
+            return (
+              <Word
+                key={i}
+                progress={scrollYProgress}
+                range={[start, end]}
+                dimOpacity={dimOpacity}
+              >
+                {word}
+              </Word>
+            );
+          })}
+        </p>
+      </div>
+    </section>
+  );
+}
+
+function Word({
+  children,
+  progress,
+  range,
+  dimOpacity,
+}: {
+  children: string;
+  progress: MotionValue<number>;
+  range: [number, number];
+  dimOpacity: number;
+}) {
+  const opacity = useTransform(progress, range, [dimOpacity, 1]);
+  return (
+    <span className="relative mr-[0.28em] mt-[0.18em]">
+      {/* faint static ghost keeps the line readable before reveal */}
+      <span style={{ opacity: dimOpacity }}>{children}</span>
+      <motion.span className="absolute inset-0" style={{ opacity }}>
+        {children}
+      </motion.span>
+    </span>
+  );
+}
+```
+
+demo.tsx
+```tsx
+import ScrollTextReveal from "@/components/ScrollTextReveal";
+
+export default function Home() {
+  return (
+    <>
+      {/* ... a section above ... */}
+
+      <ScrollTextReveal
+        eyebrow="Our Philosophy"
+        text="We don't just build websites. We craft experiences that move, that breathe, that make people stop scrolling and start paying attention to what actually matters."
+      />
+
+      {/* ... rest of the page ... */}
+    </>
+  );
+}
+```
+
+Install NPM dependencies:
+```bash
+npm i framer-motion
+```
+
+CSS variables to set in your global stylesheet (or swap with hardcoded values in the component):
+```css
+:root {
+  --color-bg: #0a0a0a;       /* section background */
+  --color-text: #f5f5f5;     /* the paragraph text */
+  --color-accent: #d4b46a;   /* eyebrow label */
+  --font-display: inherit;   /* set to your display/serif font for a more editorial feel */
+}
+```
+
+Implementation Guidelines
+ 1. Analyze the component structure and identify all required dependencies
+ 2. Review the component's arguments and state
+ 3. Identify any required context providers or hooks and install them
+ 4. Questions to Ask
+  - What is the one paragraph / statement to reveal? (keep it to ~20–40 words)
+  - Is there an eyebrow label, or none?
+  - What display font should the text use, if any?
+  - Is framer-motion already installed? (check package.json before running npm install)
+  - Does the project use Lenis smooth scroll? It needs NO special wiring here — useScroll
+    reads the native scroll position and Lenis drives that, so it just works.
+
+Steps to integrate
+ 0. Copy-paste the component to /components/ScrollTextReveal.tsx
+ 1. Install framer-motion if not already present
+ 2. Replace the `text` prop with your real statement, and set or remove `eyebrow`
+ 3. Set CSS variables in your global stylesheet, or replace var(--color-…) with hardcoded values
+ 4. Place <ScrollTextReveal /> between two heavier sections as a calm beat
+
+Critical rules — do not violate these or the effect will break or look wrong:
+ - KEEP the ref on the <p> (targetRef) — useScroll measures THAT element. Moving the ref to an
+   outer wrapper changes when the reveal starts and ends.
+ - KEEP the generous vertical padding (py-[40vh]). The reveal needs scroll distance to play
+   across; remove it and every word lights up almost at once.
+ - KEEP both spans inside Word — the dim static copy keeps the sentence legible before the
+   animated copy fades in over it. Rendering only the animated span makes early words invisible.
+ - DO NOT pin or add scroll-snap. This effect is deliberately un-pinned so it composes with
+   anything above and below it.
+ - The per-word window is start = i/words.length .. end = start + 1/words.length. Keep words as
+   whole tokens (split on spaces); splitting per-character will desync the timing.

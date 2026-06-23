@@ -104,6 +104,24 @@ export const groups: Group[] = [
         goodToKnow:
           "The demo uses placeholder screenshot images from the web — replace both with your own pair. Works with both mouse drag and touch out of the box.",
       },
+      {
+        id: "fan-out-card",
+        number: "1.5",
+        title: "Fan-Out Card",
+        promptFile: "fan-out-card",
+        tags: ["GSAP", "Hover (tap on mobile)", "Photo deal-out"],
+        whatItIs:
+          "A tall photo card with a hidden stack of smaller 'prints' tucked behind it. On hover the prints deal out into a fan — one up, two to each side — with a springy back-ease overshoot and a staggered start, while the front image scales up a touch. Move away and they snap back behind the card.",
+        perfectFor:
+          "A showcase or gallery grid where each card represents a project, a package, or a place that has more than one photo to show. Great for studios, photographers, venues, real estate — anywhere a single thumbnail undersells what's behind it.",
+        prepare: [
+          "One main 'front' image for the card (portrait, 2:3 works best)",
+          "Up to five smaller 'print' images that deal out from behind it",
+          "Optionally a title, a short tagline, and a link for the card",
+        ],
+        goodToKnow:
+          "On touch devices (no hover) the first tap fans the prints instead of following the link, so phone users still see the effect. The fan offsets are calibrated for a ~300px-wide card; if you change the card width and the prints fan too far or not enough, pass your own `fan` offsets via the prop. Note the card has no clipping, so the prints fan OUTSIDE its bounds — leave breathing room around it in your layout.",
+      },
     ],
   },
   {
@@ -184,6 +202,23 @@ export const groups: Group[] = [
         goodToKnow:
           "This is a component, not a section, so your customization message should say where to use it, e.g.: “Use this AnimateNumber component for the four stats in my projects section, animating them when they scroll into view.” It has zero dependencies and even respects users who turn off motion in their system settings.",
       },
+      {
+        id: "stagger-testimonials",
+        number: "3.3",
+        title: "Stagger Testimonials",
+        promptFile: "stagger-testimonials",
+        tags: ["Zero dependencies", "CSS transforms", "Click-to-center"],
+        whatItIs:
+          "A row of testimonial cards fanned out in a staggered arc. The centred card pops forward — lifted, ivory, with a hard offset shadow — while the others tilt away to the sides. Click a side card (or use the arrows) and a new one eased-slides into the centre as the whole fan re-shuffles. Each card has a clipped corner, a 45° accent line and a monogram initial for a 'ticket' look.",
+        perfectFor:
+          "A testimonials, reviews or quotes section on a marketing or studio site. It looks best mid-page on a warm-dark band, where the ivory centre card really pops. Works with any number of quotes — odd counts centre most cleanly.",
+        prepare: [
+          "Three or more short testimonials, each with the quote and the person's name (the first letter becomes the monogram)",
+          "Keep quotes punchy — the cards are square, so very long quotes need a bigger card or smaller text to avoid overflow",
+        ],
+        goodToKnow:
+          "Zero dependencies — pure React state + a 500ms CSS transition does all the motion. On phones (<640px) the fan can't breathe, so only the centre card shows and the arrows rotate through it; the full fan returns on tablet and up. The reorder animates because items are re-keyed on every move — that's load-bearing, not a quirk.",
+      },
     ],
   },
   {
@@ -221,6 +256,72 @@ export const groups: Group[] = [
         ],
         goodToKnow:
           "This one matters: out of the box, the form is a demo. It plays the success animation but doesn't actually send anything anywhere — there's a placeholder where the real sending logic goes. Getting your form submissions to your inbox is its own small topic, and we cover it in a later lesson. For now, integrate the section, fill in your real contact details, and know that the phone/email links work immediately even if the form doesn't yet.",
+      },
+    ],
+  },
+  {
+    id: "text-headlines",
+    name: "Text & Headlines",
+    blurb: "Make the words themselves the animation.",
+    sections: [
+      {
+        id: "scroll-text-reveal",
+        number: "5.1",
+        title: "Scroll Text Reveal",
+        promptFile: "scroll-text-reveal",
+        tags: ["Framer Motion", "Scroll-scrubbed", "Text-only"],
+        whatItIs:
+          "A statement paragraph that starts dim and brightens one word at a time as the visitor scrolls through it — the reading pace and the scroll become the same motion. No images, no pinning, just type that earns attention.",
+        perfectFor:
+          "A mission statement, manifesto, or single big idea you want to land slowly. Drop it between two heavier sections as a calm, confident breather — agencies, studios, editorial and brand sites especially.",
+        prepare: [
+          "One punchy paragraph — roughly 20–40 words. Shorter and sharper reads better than long and explanatory.",
+          "An optional short eyebrow label (e.g. “Our Philosophy”)",
+        ],
+        goodToKnow:
+          "Pure Framer Motion (already in the stack) — no GSAP, no pinning, so it plays nicely with smooth scroll and works the same on mobile as on desktop. The generous py-[40vh] spacing is intentional: it gives the words room to reveal across a comfortable scroll distance. Tighten it only if the paragraph is very short.",
+      },
+    ],
+  },
+  {
+    id: "hero-sections",
+    name: "Hero Sections",
+    blurb: "Opening moments that make the first scroll unforgettable.",
+    sections: [
+      {
+        id: "scatter-hero",
+        number: "6.1",
+        title: "Scatter Hero",
+        promptFile: "scatter-hero",
+        tags: ["GSAP + ScrollTrigger", "Sticky scroll hero", "Letter-by-letter reveal"],
+        whatItIs:
+          "A full-screen opening where six photos sit in a collage. As you scroll, the side photos fly off-screen and the top images scroll away, while the bottom-center photo zooms up to fill the screen and your brand name rises in letter-by-letter over it. That photo then sticks in place and darkens as your next section scrolls up to take over.",
+        perfectFor:
+          "The very top of a brand-led site with a handful of striking photos — studios, architecture, fashion, hospitality, agencies. It's the first thing visitors see, so it sets the whole tone.",
+        prepare: [
+          "Six images: four portrait shots for the corners, one wide banner image for the top-centre, and one strong landscape photo for the bottom-center centrepiece (the one that zooms to full screen)",
+          "A headline, your brand name (for the letter-by-letter reveal), and a CTA label + link",
+          "The next section of your page — it scrolls up over the photo and triggers the darken",
+        ],
+        goodToKnow:
+          "Two things matter most. First, you MUST pass your next section as children of <ScatterHero> — the darken-on-handoff only fires when there's content overlapping the sticky photo; without it the second half of the effect is skipped (by design). Second, the bottom-center `hero` tile is the centrepiece that zooms to full screen — give it your strongest landscape shot. It also respects prefers-reduced-motion: visitors with that setting see the finished end-state (full-screen photo + title) with no scrubbing. Both desktop and mobile animate; the corner tiles simply shrink on smaller screens.",
+      },
+      {
+        id: "aperture-reveal-hero",
+        number: "6.2",
+        title: "Aperture Reveal Hero",
+        promptFile: "aperture-reveal-hero",
+        tags: ["GSAP + CustomEase", "Hosts Lenis", "Scroll-locked entrance", "Letter stagger"],
+        whatItIs:
+          "A cinematic on-load entrance. A small centred photo opens from a thin letterbox slit, settles from a slow push-in (Ken Burns), then auto-expands to full-bleed while an ink scrim fades in and the headline rises in letter-by-letter. The page is scroll-locked from the first paint and only released when the entrance finishes (~2.4s). With more than one image, they crossfade behind the headline.",
+        perfectFor:
+          "Luxury, portfolio, case-study or editorial sites. Use it at the very top of the page (or as the opening of a project-detail page) when you want an uninterrupted, deliberate intro before the visitor can scroll.",
+        prepare: [
+          "One to three landscape hero images — the same set feeds the entrance Ken-Burns and the crossfade carousel",
+          "One headline string (the H1)",
+        ],
+        goodToKnow:
+          "This hero HOSTS your page's Lenis smooth-scroll and locks scrolling until the entrance completes — so it must be the page's scroll owner; don't also set up Lenis elsewhere. It needs the `lenis` package (plus gsap + gsap/CustomEase) and a one-line inline script in your root layout's <head> that adds a `js` class to <html>, which prevents a reload flash. It comes with its own CSS Module. Reduced-motion visitors get a static, full-bleed hero with everything already visible — never a locked page.",
       },
     ],
   },

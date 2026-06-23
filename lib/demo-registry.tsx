@@ -1,5 +1,11 @@
 import type { ComponentType } from "react";
 import ApertureRevealDemo from "@/components/demos/aperture-reveal-demo";
+import ScrollTextRevealDemo from "@/components/demos/scroll-text-reveal-demo";
+import ScatterHeroDemo from "@/components/demos/scatter-hero-demo";
+import PageTransitionDemo from "@/components/demos/page-transition-demo";
+import StaggerTestimonialsDemo from "@/components/demos/stagger-testimonials-demo";
+import FanOutCardDemo from "@/components/demos/fan-out-card-demo";
+import ApertureRevealHeroDemo from "@/components/demos/aperture-reveal-hero-demo";
 import StackingCardsDemo from "@/components/demos/stacking-cards-demo";
 import FeatureDemo from "@/components/demos/before-after-demo";
 import AnimateNumberDemo from "@/components/demos/animate-number-demo";
@@ -36,6 +42,37 @@ export const demoRegistry: Record<string, DemoEntry> = {
     frame: "runway",
     background: "#0f0b06",
     hint: "Scroll — one card per scroll",
+  },
+  "scroll-text-reveal": {
+    Component: ScrollTextRevealDemo,
+    frame: "runway",
+    background: "#0a0a0a",
+    hint: "Scroll — words brighten as you go",
+  },
+  "scatter-hero": {
+    Component: ScatterHeroDemo,
+    frame: "plain",
+    background: "#f6f3ec",
+  },
+  "page-transition-slide-up": {
+    Component: PageTransitionDemo,
+    frame: "centered",
+    background: "#0a0a0a",
+  },
+  "stagger-testimonials": {
+    Component: StaggerTestimonialsDemo,
+    frame: "plain",
+    background: "#2a241f",
+  },
+  "fan-out-card": {
+    Component: FanOutCardDemo,
+    frame: "centered",
+    background: "#1f1a15",
+  },
+  "aperture-reveal-hero": {
+    Component: ApertureRevealHeroDemo,
+    frame: "plain",
+    background: "#0f0f12",
   },
   "horizontal-showcase": {
     Component: ProjectsSection,
