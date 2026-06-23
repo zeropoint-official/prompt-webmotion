@@ -55,7 +55,7 @@ export const toolkitItems: ToolkitItem[] = [
     ],
     goodToKnow:
       "The prompt deliberately pulls Next.js with the `latest` tag instead of a pinned version, and it refuses to overwrite real files — if your folder isn't empty it stops and asks. If your repo uses pnpm or yarn, the prompt detects the lockfile and uses the right package manager.",
-    thumb: "/thumbs/process-steps.jpg",
+    thumb: "/thumbs/process-steps.webp",
   },
   {
     id: "hero-video-masterprompt",
@@ -80,7 +80,7 @@ export const toolkitItems: ToolkitItem[] = [
     ],
     goodToKnow:
       "The whole point is continuity — it restates the shared visual details in both frame prompts so the two stills look like the same shot, and keeps the motion to ONE move with no cuts (which is what scroll-scrubbing needs). It deliberately keeps text, logos and watermarks out of the frames; add your branding on the website afterwards where it stays crisp. If you attach reference images, treat them as the source of truth and tell your image tool to generate each frame from that reference.",
-    thumb: "/thumbs/aperture-reveal.jpg",
+    thumb: "/thumbs/aperture-reveal.webp",
   },
   {
     id: "scroll-video",
@@ -104,7 +104,7 @@ export const toolkitItems: ToolkitItem[] = [
     ],
     goodToKnow:
       "Every frame is downloaded by the browser, so the prompt keeps each set to roughly 120–300 frames (re-exporting at a lower fps if a clip is long). For absolute maximum quality you can ask it to export PNG instead of JPEG, at the cost of a much heavier frame folder. Needs ffmpeg installed locally (brew install ffmpeg on macOS). It respects reduced-motion by falling back to a single static frame.",
-    thumb: "/thumbs/horizontal-showcase.jpg",
+    thumb: "/thumbs/horizontal-showcase.webp",
   },
   {
     id: "design-system",
@@ -128,7 +128,7 @@ export const toolkitItems: ToolkitItem[] = [
     ],
     goodToKnow:
       "The system is industry-agnostic — it tells Claude to inherit YOUR site's palette, fonts and accent rather than imposing the reference project's gold-and-ink theme. The last section of the file is a one-paragraph preamble you can paste straight into a request. Keep the file in the repo so every future section request stays consistent.",
-    thumb: "/thumbs/services-accordion.jpg",
+    thumb: "/thumbs/services-accordion.webp",
   },
   {
     id: "page-transition-slide-up",
@@ -152,7 +152,7 @@ export const toolkitItems: ToolkitItem[] = [
     ],
     goodToKnow:
       "Two non-negotiables: navigate with the Link from next-view-transitions (a plain next/link just hard-swaps), and keep the app wrapped in <ViewTransitions>. The overlap effect comes from the old page being frozen at a lower z-index (animation:none; z-index:1) while the new page slides up on top — don't remove that rule or you get the default cross-fade. It's progressive enhancement: browsers without the View Transitions API (e.g. older Firefox) degrade to an instant swap, which is fine. Set --page-tx-scale-from to 1 for a pure slide with no scale.",
-    thumb: "/thumbs/stacking-cards.jpg",
+    thumb: "/thumbs/stacking-cards.webp",
   },
 ];
 

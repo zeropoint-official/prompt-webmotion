@@ -94,7 +94,7 @@ export default function Home() {
         >
           <div className="relative aspect-[16/10] overflow-hidden border-b border-veil-soft sm:aspect-auto sm:min-h-[280px] sm:border-r sm:border-b-0">
             <Image
-              src={`/thumbs/${lead.section.id}.jpg`}
+              src={`/thumbs/${lead.section.id}.webp`}
               alt={`Preview of the ${lead.section.title} section`}
               fill
               sizes="(max-width: 640px) 100vw, 55vw"
@@ -138,7 +138,7 @@ export default function Home() {
               className="panel panel-hover group relative aspect-[4/3] overflow-hidden"
             >
               <Image
-                src={`/thumbs/${section.id}.jpg`}
+                src={`/thumbs/${section.id}.webp`}
                 alt={`Preview of the ${section.title} section`}
                 fill
                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"

@@ -45,7 +45,7 @@ export default function RootLayout({
         lang="en"
         className={`${display.variable} ${body.variable} ${mono.variable} h-full antialiased`}
       >
-        <body className="min-h-full">{children}</body>
+        <body className="min-h-full" suppressHydrationWarning>{children}</body>
       </html>
     </ClerkProvider>
   );

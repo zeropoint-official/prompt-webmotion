@@ -36,10 +36,10 @@ export const categories: Category[] = [
     href: "/library",
     count: sectionCount,
     thumbs: [
-      "/thumbs/aperture-reveal.jpg",
-      "/thumbs/stacking-cards.jpg",
-      "/thumbs/horizontal-showcase.jpg",
-      "/thumbs/services-accordion.jpg",
+      "/thumbs/aperture-reveal.webp",
+      "/thumbs/stacking-cards.webp",
+      "/thumbs/horizontal-showcase.webp",
+      "/thumbs/services-accordion.webp",
     ],
   },
   {
@@ -50,7 +50,7 @@ export const categories: Category[] = [
     status: "live",
     href: "/toolkit",
     count: toolkitCount,
-    thumbs: ["/thumbs/process-steps.jpg", "/thumbs/horizontal-showcase.jpg"],
+    thumbs: ["/thumbs/process-steps.webp", "/thumbs/horizontal-showcase.webp"],
   },
   {
     id: "hero-animations",

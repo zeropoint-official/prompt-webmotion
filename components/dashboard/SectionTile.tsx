@@ -17,7 +17,7 @@ export default function SectionTile({ section, groupName }: SectionTileProps) {
       {/* screenshot preview */}
       <div className="relative aspect-[16/9] overflow-hidden border-b border-veil-soft">
         <Image
-          src={`/thumbs/${section.id}.jpg`}
+          src={`/thumbs/${section.id}.webp`}
           alt={`Preview of the ${section.title} section`}
           width={1600}
           height={964}
