@@ -4,6 +4,7 @@ import {
   Bricolage_Grotesque,
   Schibsted_Grotesk,
   Spline_Sans_Mono,
+  Fraunces,
 } from "next/font/google";
 import "./globals.css";
 
@@ -11,6 +12,14 @@ const display = Bricolage_Grotesque({
   subsets: ["latin"],
   axes: ["opsz"],
   variable: "--font-display",
+});
+
+// Editorial serif for the Maré website-template demos (Website Templates).
+const serif = Fraunces({
+  subsets: ["latin"],
+  style: ["normal", "italic"],
+  variable: "--font-serif",
+  display: "swap",
 });
 
 const body = Schibsted_Grotesk({
@@ -43,7 +52,7 @@ export default function RootLayout({
     >
       <html
         lang="en"
-        className={`${display.variable} ${body.variable} ${mono.variable} h-full antialiased`}
+        className={`${display.variable} ${body.variable} ${mono.variable} ${serif.variable} h-full antialiased`}
       >
         <body className="min-h-full" suppressHydrationWarning>{children}</body>
       </html>

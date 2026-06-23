@@ -17,6 +17,10 @@ import ProcessSection from "@/components/sections/process-section";
 import ProjectsSection from "@/components/sections/projects-section";
 import FaqSection from "@/components/sections/faq-section";
 import ContactSection from "@/components/sections/contact-section";
+import MareHeroDemo from "@/components/demos/templates/mare-hero-demo";
+import MareServicesDemo from "@/components/demos/templates/mare-services-demo";
+import MareResidencesDemo from "@/components/demos/templates/mare-residences-demo";
+import MareSiteDemo from "@/components/demos/templates/mare-site-demo";
 
 export type DemoEntry = {
   Component: ComponentType;
@@ -127,5 +131,27 @@ export const demoRegistry: Record<string, DemoEntry> = {
     Component: ContactSection,
     frame: "plain",
     background: "#0a0a0a",
+  },
+
+  /* ——— Website Templates · Maré · Florida Luxury Estates ——— */
+  "mare-site": {
+    Component: MareSiteDemo,
+    frame: "plain",
+    background: "#060708",
+  },
+  "mare-hero": {
+    Component: MareHeroDemo,
+    frame: "plain",
+    background: "#060708",
+  },
+  "mare-services": {
+    Component: MareServicesDemo,
+    frame: "plain",
+    background: "#f3f1ea",
+  },
+  "mare-residences": {
+    Component: MareResidencesDemo,
+    frame: "plain",
+    background: "#060708",
   },
 };

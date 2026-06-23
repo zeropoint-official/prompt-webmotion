@@ -18,6 +18,7 @@ export type SidebarGroup = {
 type SidebarProps = {
   groups: SidebarGroup[];
   toolkitItems: SidebarItem[];
+  templateItems: SidebarItem[];
   searchItems: SearchEntry[];
   open: boolean;
   onClose: () => void;
@@ -143,6 +144,7 @@ function Category({
 export default function Sidebar({
   groups,
   toolkitItems,
+  templateItems,
   searchItems,
   open,
   onClose,
@@ -152,12 +154,15 @@ export default function Sidebar({
   const componentsActive =
     pathname === "/library" || pathname.startsWith("/section");
   const toolkitActive = pathname.startsWith("/toolkit");
+  const templatesActive = pathname.startsWith("/templates");
 
   const activeCategory = componentsActive
     ? "components"
     : toolkitActive
       ? "toolkit"
-      : null;
+      : templatesActive
+        ? "templates"
+        : null;
 
   // Single-open accordion. The active category opens itself; users can switch.
   const [openId, setOpenId] = useState<string | null>(activeCategory);
@@ -280,6 +285,32 @@ export default function Sidebar({
                 </ul>
               </Category>
             </div>
+
+            <div className="mt-1.5">
+              <Category
+                href="/templates"
+                label="Website Templates"
+                count={templateItems.length}
+                active={templatesActive}
+                open={openId === "templates"}
+                onToggle={() => toggle("templates")}
+                onNavigate={onClose}
+              >
+                <ul className="flex flex-col">
+                  {templateItems.map((item) => (
+                    <NavLink
+                      key={item.id}
+                      href={`/templates/${item.id}`}
+                      active={pathname === `/templates/${item.id}`}
+                      onNavigate={onClose}
+                      nested
+                    >
+                      {item.title}
+                    </NavLink>
+                  ))}
+                </ul>
+              </Category>
+            </div>
           </div>
 
           {/* ——— upcoming categories ——— */}
@@ -293,14 +324,6 @@ export default function Sidebar({
                 badge={<SoonBadge />}
               >
                 Hero Animations
-              </NavLink>
-              <NavLink
-                href="/templates"
-                active={pathname.startsWith("/templates")}
-                onNavigate={onClose}
-                badge={<SoonBadge />}
-              >
-                Website Templates
               </NavLink>
             </ul>
           </div>

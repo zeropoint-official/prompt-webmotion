@@ -1,5 +1,6 @@
 import { sectionCount } from "./library";
 import { toolkitCount } from "./toolkit";
+import { templateCount } from "./templates";
 
 export type CategoryStatus = "live" | "soon";
 
@@ -73,18 +74,12 @@ export const categories: Category[] = [
   {
     id: "templates",
     name: "Website Templates",
-    blurb: "Complete, multi-section sites assembled and ready to make your own.",
-    status: "soon",
+    blurb: "Complete, multi-page sites assembled and ready to make your own.",
+    status: "live",
     href: "/templates",
-    teaser:
-      "Entire websites — hero, showcase, services, testimonials, contact — wired together as one coherent template. Start from a finished site instead of a blank page.",
-    points: [
-      "Full multi-page layouts, not single sections",
-      "Composed from the components you already know",
-      "One prompt set to brand the whole site at once",
-    ],
+    count: templateCount,
     thumbs: [
-      "/ead4c28cd939424c8f29f838c14ccf44.jpg",
+      "/thumbs/mare-hero-cover.webp",
       "/7ccc276c4ac77835f99bda277e937c9f.jpg",
     ],
   },

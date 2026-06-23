@@ -1,17 +1,40 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 type LivePreviewProps = {
   id: string;
   title: string;
+  /** taller desktop frame — for full-site previews you scroll end to end */
+  tall?: boolean;
+  /**
+   * Render the desktop iframe at this fixed CSS width and visually scale it to
+   * fit the panel. Lets width-gated sections (matchMedia ≥1024px) show their
+   * real desktop layout even inside a narrow inline panel. Omit for the normal
+   * fluid behaviour used by single-section previews.
+   */
+  desktopWidth?: number;
+  /** override the footer hint line */
+  note?: string;
 };
 
-export default function LivePreview({ id, title }: LivePreviewProps) {
+export default function LivePreview({
+  id,
+  title,
+  tall,
+  desktopWidth,
+  note,
+}: LivePreviewProps) {
   const [mode, setMode] = useState<"desktop" | "mobile">("desktop");
   const [load, setLoad] = useState(false);
   const [frameKey, setFrameKey] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
+
+  // Scaled-desktop sizing (only when desktopWidth is set).
+  const shellRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(1);
+  const scaled = mode === "desktop" && !!desktopWidth;
+  const designH = tall ? 860 : 680;
 
   // Only mount the iframe once the card is near the viewport.
   useEffect(() => {
@@ -29,6 +52,21 @@ export default function LivePreview({ id, title }: LivePreviewProps) {
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
+
+  // Measure the panel and scale the fixed-width iframe down to fit it.
+  useLayoutEffect(() => {
+    if (!scaled || !desktopWidth) return;
+    const el = shellRef.current;
+    if (!el) return;
+    const measure = () => {
+      const w = el.clientWidth;
+      setScale(Math.min(1, w / desktopWidth));
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [scaled, desktopWidth, load]);
 
   const src = `/preview/${id}`;
 
@@ -79,7 +117,38 @@ export default function LivePreview({ id, title }: LivePreviewProps) {
         className="flex justify-center transition-colors"
         style={{ background: mode === "mobile" ? "rgba(4,2,8,0.5)" : undefined }}
       >
-        {load ? (
+        {!load ? (
+          <div
+            className={`flex w-full items-center justify-center ${
+              tall ? "h-[40rem] sm:h-[46rem]" : "h-[34rem] sm:h-[38rem]"
+            }`}
+          >
+            <span className="font-mono text-[10px] tracking-[0.22em] text-frost-faint uppercase">
+              Loading preview…
+            </span>
+          </div>
+        ) : scaled ? (
+          // True desktop width, scaled to fit the panel.
+          <div
+            ref={shellRef}
+            className="w-full overflow-hidden"
+            style={{ height: Math.round(designH * scale) }}
+          >
+            <iframe
+              key={`${mode}-${frameKey}`}
+              src={src}
+              title={`Live preview — ${title}`}
+              loading="lazy"
+              style={{
+                width: desktopWidth,
+                height: designH,
+                border: 0,
+                transform: `scale(${scale})`,
+                transformOrigin: "top left",
+              }}
+            />
+          </div>
+        ) : (
           <iframe
             key={`${mode}-${frameKey}`}
             src={src}
@@ -87,22 +156,18 @@ export default function LivePreview({ id, title }: LivePreviewProps) {
             loading="lazy"
             className={
               mode === "desktop"
-                ? "h-[34rem] w-full sm:h-[38rem]"
-                : "my-8 h-[38rem] w-[24.4rem] max-w-full rounded-2xl border border-veil"
+                ? tall
+                  ? "h-[40rem] w-full sm:h-[46rem]"
+                  : "h-[34rem] w-full sm:h-[38rem]"
+                : "my-8 h-[44rem] w-[24.4rem] max-w-full rounded-2xl border border-veil"
             }
           />
-        ) : (
-          <div className="flex h-[34rem] w-full items-center justify-center sm:h-[38rem]">
-            <span className="font-mono text-[10px] tracking-[0.22em] text-frost-faint uppercase">
-              Loading preview…
-            </span>
-          </div>
         )}
       </div>
 
       <p className="border-t border-veil-soft px-6 py-3 font-mono text-[9.5px] tracking-[0.14em] text-frost-faint uppercase">
-        Scroll & click inside the frame — it&apos;s the real section running
-        with demo content
+        {note ??
+          "Scroll & click inside the frame — it's the real section running with demo content"}
       </p>
     </div>
   );

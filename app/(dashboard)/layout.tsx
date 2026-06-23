@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { groups } from "@/lib/sections";
 import { searchIndex } from "@/lib/library";
 import { toolkitItems } from "@/lib/toolkit";
+import { templates } from "@/lib/templates";
 import { isMember } from "@/lib/members";
 import Shell from "@/components/dashboard/Shell";
 
@@ -33,10 +34,16 @@ export default async function DashboardLayout({
     title: item.title,
   }));
 
+  const sidebarTemplates = templates.map((item) => ({
+    id: item.id,
+    title: item.title,
+  }));
+
   return (
     <Shell
       groups={sidebarGroups}
       toolkitItems={sidebarToolkit}
+      templateItems={sidebarTemplates}
       searchItems={searchIndex}
     >
       {children}

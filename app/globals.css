@@ -32,6 +32,12 @@
   --border: #e5e5e5;
   --input: #e5e5e5;
   --ring: #a3a3a3;
+
+  /* ——— Maré template demos (Website Templates) — cinematic ink/paper ——— */
+  --ink: #060708;
+  --ink-soft: #14171a;
+  --paper: #fbfbf9;
+  --paper-dim: #aeb4ba;
 }
 
 @theme inline {
@@ -62,6 +68,12 @@
   --color-secondary-foreground: var(--secondary-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
+  /* Maré template demo tokens — enable bg-ink / text-paper / text-paper-dim */
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-paper: var(--paper);
+  --color-paper-dim: var(--paper-dim);
+  --font-serif: var(--font-serif), Georgia, "Times New Roman", serif;
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
@@ -189,4 +201,44 @@ body {
 .proj-card:hover .proj-text-group span {
   color: #161616 !important;
   text-shadow: 2px 2px 2px #f4f3ee;
+}
+
+/* ——— Maré template demos (Website Templates) — editorial helpers ——— */
+/* High-contrast serif for hero headlines (Fraunces, loaded in the root layout) */
+.font-editorial {
+  font-family: var(--font-serif), Georgia, "Times New Roman", serif;
+  font-optical-sizing: auto;
+}
+
+/* Thin, letter-spaced eyebrow label */
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.42em;
+  font-weight: 500;
+  font-size: 0.68rem;
+}
+
+/* Subtle shadow so bright text stays legible over any frame */
+.text-legible {
+  text-shadow: 0 2px 40px rgba(0, 0, 0, 0.55), 0 1px 8px rgba(0, 0, 0, 0.45);
+}
+
+/* Hide scrollbars on horizontal snap rails (mobile carousels) */
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* Faint film grain for cinematic texture */
+.grain::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.05;
+  z-index: 30;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }

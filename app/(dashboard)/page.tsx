@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { allSections, sectionCount } from "@/lib/library";
 import { toolkitItems, toolkitCount } from "@/lib/toolkit";
+import { templates, templateCount } from "@/lib/templates";
 import { soonCategories } from "@/lib/catalog";
 import ListRow from "@/components/dashboard/ListRow";
 import { ArrowRightIcon } from "@/components/dashboard/icons";
@@ -151,6 +152,42 @@ export default function Home() {
                 </p>
                 <h4 className="mt-1 font-display text-[15px] leading-snug font-semibold tracking-tight text-frost">
                   {section.title}
+                </h4>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* ———— website templates — visual spotlight ———— */}
+      <section aria-labelledby="home-templates">
+        <SectionHead
+          title="Website Templates"
+          meta={`${templateCount} full ${templateCount === 1 ? "site" : "sites"}`}
+          href="/templates"
+          cta="Browse all"
+        />
+        <div className="grid gap-4 sm:grid-cols-2">
+          {templates.map((t) => (
+            <Link
+              key={t.id}
+              href={`/templates/${t.id}`}
+              className="panel panel-hover group relative aspect-[16/10] overflow-hidden"
+            >
+              <Image
+                src={t.thumb}
+                alt={`Preview of the ${t.title} template`}
+                fill
+                sizes="(max-width: 640px) 100vw, 50vw"
+                className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-abyss via-abyss/35 to-transparent" />
+              <div className="absolute inset-x-0 bottom-0 p-5">
+                <p className="font-mono text-[9px] tracking-[0.2em] text-frost/60 uppercase">
+                  {t.number} · Full multi-page site
+                </p>
+                <h4 className="mt-1 font-display text-[17px] leading-snug font-semibold tracking-tight text-frost">
+                  {t.title}
                 </h4>
               </div>
             </Link>

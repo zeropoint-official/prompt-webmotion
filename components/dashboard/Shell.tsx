@@ -8,6 +8,7 @@ import { MenuIcon } from "./icons";
 type ShellProps = {
   groups: SidebarGroup[];
   toolkitItems: SidebarItem[];
+  templateItems: SidebarItem[];
   searchItems: SearchEntry[];
   children: React.ReactNode;
 };
@@ -15,6 +16,7 @@ type ShellProps = {
 export default function Shell({
   groups,
   toolkitItems,
+  templateItems,
   searchItems,
   children,
 }: ShellProps) {
@@ -25,6 +27,7 @@ export default function Shell({
       <Sidebar
         groups={groups}
         toolkitItems={toolkitItems}
+        templateItems={templateItems}
         searchItems={searchItems}
         open={menuOpen}
         onClose={() => setMenuOpen(false)}
