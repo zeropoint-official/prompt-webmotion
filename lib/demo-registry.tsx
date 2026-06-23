@@ -1,6 +1,7 @@
 import type { ComponentType } from "react";
 import ApertureRevealDemo from "@/components/demos/aperture-reveal-demo";
 import ScrollTextRevealDemo from "@/components/demos/scroll-text-reveal-demo";
+import ScatterManifestoDemo from "@/components/demos/scatter-manifesto-demo";
 import ScatterHeroDemo from "@/components/demos/scatter-hero-demo";
 import PageTransitionDemo from "@/components/demos/page-transition-demo";
 import StaggerTestimonialsDemo from "@/components/demos/stagger-testimonials-demo";
@@ -49,6 +50,12 @@ export const demoRegistry: Record<string, DemoEntry> = {
     frame: "runway",
     background: "#0a0a0a",
     hint: "Scroll — words brighten as you go",
+  },
+  "scatter-manifesto": {
+    Component: ScatterManifestoDemo,
+    frame: "runway",
+    background: "#0a0a0a",
+    hint: "Scroll — the words scatter into place",
   },
   "scatter-hero": {
     Component: ScatterHeroDemo,

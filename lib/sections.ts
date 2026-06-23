@@ -312,6 +312,31 @@ Install gsap if it isn't already, and add the required .proj-* classes to my glo
         goodToKnow:
           "Pure Framer Motion (already in the stack) — no GSAP, no pinning, so it plays nicely with smooth scroll and works the same on mobile as on desktop. The generous py-[40vh] spacing is intentional: it gives the words room to reveal across a comfortable scroll distance. Tighten it only if the paragraph is very short.",
       },
+      {
+        id: "scatter-manifesto",
+        number: "5.2",
+        title: "Scatter Manifesto",
+        promptFile: "scatter-manifesto",
+        tags: ["GSAP + ScrollTrigger", "Framer Motion", "Scroll-scrubbed", "Text-only"],
+        whatItIs:
+          "A full-screen manifesto moment built from two layered motions. A cream panel tilts back and straightens as it locks into place over the section below, while inside it your statement is shattered into words that fly in from deep 3D space — each from a random depth, angle and offset — and resolve, in a shuffled order, to their resting positions as you scroll.",
+        perfectFor:
+          "One bold belief, mission line or manifesto you want to land with weight — studios, agencies, brand and editorial sites. It's a heavier, more cinematic cousin of Scroll Text Reveal; use it as a full-screen statement beat rather than a quiet in-line breather.",
+        prepare: [
+          "One punchy statement — roughly 20–40 words. The shorter and sharper, the better the words settle.",
+        ],
+        goodToKnow:
+          "Two motions, two libraries: Framer Motion drives the panel tilt/scale, GSAP + ScrollTrigger drives the per-word scatter (via the `split-type` package — install it, it isn't in the base stack). The section is intentionally tall (300vh) so the scatter has room to scrub across; shortening it makes the words resolve almost at once. The panel tilt respects prefers-reduced-motion (it stays flat), and it reads best sitting over a darker section so the cream panel and its top shadow pop.",
+        customize: `Integrate the Scatter Manifesto section into my site, placing it [where on the page — e.g. between my showcase and services as a full-screen statement beat].
+
+Use this statement (keep it to ~20–40 words — short and sharp settles best):
+"[Your one bold belief / mission line / manifesto here.]"
+
+Theme: [light cream panel with dark text — the default — or give me a dark panel]. Match the font to my site (it reads the --font-inter variable, or set your own).
+Install split-type if it isn't already, alongside gsap and framer-motion.
+
+[PASTE THE FULL SECTION PROMPT HERE]`,
+      },
     ],
   },
   {
