@@ -130,6 +130,30 @@ export const toolkitItems: ToolkitItem[] = [
       "The system is industry-agnostic — it tells Claude to inherit YOUR site's palette, fonts and accent rather than imposing the reference project's gold-and-ink theme. The last section of the file is a one-paragraph preamble you can paste straight into a request. Keep the file in the repo so every future section request stays consistent.",
     thumb: "/thumbs/services-accordion.jpg",
   },
+  {
+    id: "page-transition-slide-up",
+    number: "T5",
+    title: "Slide-Up Page Transition",
+    kind: "prompt",
+    promptFile: "page-transition-slide-up",
+    tags: ["View Transitions API", "next-view-transitions", "CSS-only motion"],
+    blurb:
+      "Make every route change slide up and cover the old page — an app-like overlap transition, in one prompt of CSS + a tiny wrapper.",
+    whatItIs:
+      "A global navigation transition for App Router sites. On every route change the incoming page slides up from the bottom and scales to full over the outgoing page, which stays frozen underneath — so the new page appears to cover the old one instead of hard-reloading. It rides on the browser's native View Transitions API, driven by the next-view-transitions package so it fires on forward AND back navigation. The motion is pure CSS (no GSAP, no Framer); a small ScrollResetOnRouteChange component keeps each new page starting at the top.",
+    perfectFor:
+      "Any multi-page App Router site that wants a polished, app-like feel — portfolios, studios, product sites. It applies globally to every Link navigation, so you wire it once and the whole site benefits.",
+    use: [
+      "Run the prompt in your App Router project (it needs at least two routes to be visible).",
+      "It installs next-view-transitions, adds the slide-up keyframes and ::view-transition rules to globals.css, and wraps the root layout in <ViewTransitions>.",
+      "It drops in components/ScrollResetOnRouteChange.tsx and mounts it once inside <body>.",
+      "Switch the links you want to animate from next/link to the Link from next-view-transitions.",
+      "Click between two routes and confirm the new page slides up over the old one; tune --page-tx-duration / --page-tx-scale-from to taste.",
+    ],
+    goodToKnow:
+      "Two non-negotiables: navigate with the Link from next-view-transitions (a plain next/link just hard-swaps), and keep the app wrapped in <ViewTransitions>. The overlap effect comes from the old page being frozen at a lower z-index (animation:none; z-index:1) while the new page slides up on top — don't remove that rule or you get the default cross-fade. It's progressive enhancement: browsers without the View Transitions API (e.g. older Firefox) degrade to an instant swap, which is fine. Set --page-tx-scale-from to 1 for a pure slide with no scale.",
+    thumb: "/thumbs/stacking-cards.jpg",
+  },
 ];
 
 export const toolkitCount = toolkitItems.length;

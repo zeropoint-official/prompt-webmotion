@@ -1,0 +1,216 @@
+You are given a task to integrate an existing React component in the codebase.
+
+The codebase should support:
+- Next.js (App Router or Pages)
+- Tailwind CSS
+- TypeScript
+
+If it doesn't, provide instructions on how to install Tailwind or TypeScript.
+
+Determine the default path for components. If it is not /components, provide instructions
+on why it is important to create that folder.
+
+Copy-paste this component to /components/FanOutCard.tsx:
+
+```tsx
+"use client";
+
+import { useRef, useLayoutEffect } from "react";
+import { gsap } from "gsap";
+
+/**
+ * FanOutCard
+ *
+ * A card with a stack of "prints" hidden behind its main image. On hover the
+ * prints deal out into a fan (one up, two left, two right) with a back-ease
+ * overshoot and a staggered start, while the main image scales up slightly. On
+ * leave they collapse back behind the card.
+ */
+
+type FanPos = { x: number; y: number; rot: number };
+
+// Fan target offsets (px) + rotation, in order: top, left-in, left-out, right-in, right-out.
+// A contained upward arc, calibrated for a ~300px-wide card — scale these if you
+// change the card width or the prints fan too far / not enough.
+const FAN: FanPos[] = [
+  { x: 0, y: -290, rot: 0 },
+  { x: -200, y: -120, rot: -10 },
+  { x: -255, y: -10, rot: -20 },
+  { x: 200, y: -120, rot: 10 },
+  { x: 255, y: -10, rot: 20 },
+];
+
+type FanOutCardProps = {
+  /** main (front) image */
+  image: string;
+  /** images that deal out from behind — up to 5 (cycles FAN positions) */
+  prints: string[];
+  title?: string;
+  tagline?: string;
+  href?: string;
+  /** override the fan target offsets (px) */
+  fan?: FanPos[];
+};
+
+export default function FanOutCard({
+  image,
+  prints,
+  title,
+  tagline,
+  href = "#",
+  fan = FAN,
+}: FanOutCardProps) {
+  const stage = useRef<HTMLDivElement>(null);
+  const tl = useRef<gsap.core.Timeline | null>(null);
+
+  useLayoutEffect(() => {
+    const ctx = gsap.context(() => {
+      const fp = gsap.utils.toArray<HTMLElement>(".fan-print", stage.current!);
+      // Stacked behind the front image, centred, hidden.
+      gsap.set(fp, { xPercent: -50, yPercent: -50, x: 0, y: 0, rotate: 0, scale: 0.82, opacity: 0 });
+
+      const timeline = gsap.timeline({ paused: true });
+      timeline.to(".booth-img", { scale: 1.03, duration: 0.5, ease: "power3.out" }, 0);
+      fp.forEach((p, i) => {
+        const t = fan[i] ?? fan[0];
+        timeline.to(
+          p,
+          { x: t.x, y: t.y, rotate: t.rot, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" },
+          0.05 + i * 0.05
+        );
+      });
+      tl.current = timeline;
+    }, stage);
+    return () => ctx.revert();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const play = () => tl.current?.play();
+  const reverse = () => tl.current?.reverse();
+
+  // Touch fallback: tap toggles the fan (hover doesn't fire on touch devices).
+  const toggle = () => {
+    const t = tl.current;
+    if (!t) return;
+    t.reversed() || t.progress() === 0 ? t.play() : t.reverse();
+  };
+
+  return (
+    <a href={href} className="flex flex-col items-center">
+      <div
+        ref={stage}
+        className="relative"
+        style={{ width: "min(72vw, 300px)", aspectRatio: "2 / 3" }}
+        onMouseEnter={play}
+        onMouseLeave={reverse}
+        onClick={(e) => {
+          // let touch users fan without navigating on the first tap
+          if (window.matchMedia("(hover: none)").matches) {
+            e.preventDefault();
+            toggle();
+          }
+        }}
+      >
+        {/* prints — behind the front image, centred */}
+        {prints.map((src, i) => (
+          <div key={i} className="fan-print absolute left-1/2 top-1/2 z-10 w-[42%]" style={{ aspectRatio: "4 / 5" }}>
+            <div className="relative h-full w-full overflow-hidden border-[6px] border-[var(--fan-print-border,#fff)] bg-[var(--fan-print-bg,#fff)] shadow-2xl ring-1 ring-[var(--fan-print-ring,rgba(54,48,42,0.1))]">
+              <img src={src} alt="" className="h-full w-full object-cover" />
+            </div>
+          </div>
+        ))}
+
+        {/* front image — on top, prints emerge from behind it */}
+        <div className="booth-img relative z-20 h-full w-full overflow-hidden">
+          <img src={image} alt={title ?? ""} className="h-full w-full object-cover" />
+        </div>
+      </div>
+
+      {title ? (
+        <h3 className="mt-6 text-xl tracking-tight text-[var(--fan-title,#f6f3ec)]" style={{ fontFamily: "var(--fan-display-font, inherit)" }}>
+          {title}
+        </h3>
+      ) : null}
+      {tagline ? (
+        <p className="mt-1 text-xs uppercase tracking-[0.2em] text-[var(--fan-tagline,rgba(246,243,236,0.55))]">{tagline}</p>
+      ) : null}
+    </a>
+  );
+}
+```
+
+demo.tsx
+```tsx
+import FanOutCard from "@/components/FanOutCard";
+
+export default function Showcase() {
+  return (
+    <section className="flex flex-wrap justify-center gap-x-24 gap-y-32 bg-[#1f1a15] px-6 py-32">
+      <FanOutCard
+        image="/showcase/garden-front.jpg"
+        prints={[
+          "/showcase/garden-1.jpg",
+          "/showcase/garden-2.jpg",
+          "/showcase/garden-3.jpg",
+          "/showcase/garden-4.jpg",
+          "/showcase/garden-5.jpg",
+        ]}
+        title="The Garden Booth"
+        tagline="Weddings · Events"
+        href="/booths/garden"
+      />
+    </section>
+  );
+}
+```
+
+Install NPM dependencies:
+```bash
+npm i gsap
+```
+
+CSS variables to set in your global stylesheet (or swap with hardcoded values in the component):
+```css
+:root {
+  --fan-print-border: #ffffff;               /* white frame around each print */
+  --fan-print-bg: #ffffff;                   /* print backing */
+  --fan-print-ring: rgba(54, 48, 42, 0.1);   /* subtle edge ring on each print */
+  --fan-title: #f6f3ec;                      /* title colour */
+  --fan-tagline: rgba(246, 243, 236, 0.55);  /* tagline colour */
+  --fan-display-font: inherit;               /* font for the title */
+}
+```
+
+Implementation Guidelines
+ 1. Analyze the component structure and identify all required dependencies
+ 2. Review the component's arguments and state
+ 3. Identify any required context providers or hooks and install them
+ 4. Questions to Ask
+  - What is the main (front) image for each card?
+  - What are the "print" images that deal out from behind (up to 5 per card)?
+  - Title, tagline, and link for each card?
+  - Is GSAP already installed? (check package.json before running npm install)
+  - How wide is the card in your layout? The default FAN offsets are tuned for ~300px; if you
+    resize the card, you'll likely want to pass scaled `fan` offsets.
+
+Steps to integrate
+ 0. Copy-paste the component to /components/FanOutCard.tsx
+ 1. Install gsap if not already present
+ 2. Put your front image + up to five print images in /public and pass them via `image` / `prints`
+ 3. Set title, tagline, href as needed
+ 4. Set the --fan-* CSS variables in your global stylesheet, or replace var(--fan-…) with values
+ 5. Give each card breathing room — the prints fan OUTSIDE the card bounds (see rules)
+
+Critical rules — do not violate these or the effect will break or look wrong:
+ - The stage has NO overflow-hidden on purpose — the prints fan out beyond the card. Don't wrap it
+   in an overflow-hidden/clipping container, and leave space around each card in your grid (the
+   default fan reaches ~290px up and ~255px to each side of a 300px card).
+ - Prints start stacked behind the front image (scale 0.82, opacity 0, centred). The front image
+   is z-20 and the prints z-10 so they emerge from behind it — keep that z-order.
+ - The motion is a paused GSAP timeline: back.out(1.5) overshoot, 0.55s per print, staggered by
+   0.05s, with the front image easing to scale 1.03. Hover plays it, leave reverses it. Don't
+   replace the timeline with CSS transitions or you lose the overshoot + stagger.
+ - Keep the touch fallback: on (hover: none) devices the first tap fans the prints and prevents
+   navigation; without it, phone users would just follow the link and never see the effect.
+ - The FAN offsets are calibrated for a ~300px-wide card. If you change the width, pass a scaled
+   `fan` prop rather than editing distances inline, so the arc stays proportional.

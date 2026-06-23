@@ -8,6 +8,8 @@ import {
   getToolkitNeighbours,
 } from "@/lib/toolkit";
 import { readPrompt } from "@/lib/prompts";
+import { demoRegistry } from "@/lib/demo-registry";
+import LivePreview from "@/components/LivePreview";
 import PromptBlock from "@/components/PromptBlock";
 import CopyButton from "@/components/CopyButton";
 
@@ -71,6 +73,8 @@ export default async function ToolkitItemPage({
       ? readPublicFile(item.downloadPath)
       : null;
 
+  const hasPreview = Boolean(demoRegistry[item.id]);
+
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-8">
       {/* ———— header ———— */}
@@ -114,6 +118,9 @@ export default async function ToolkitItemPage({
           ))}
         </ul>
       </header>
+
+      {/* ———— live preview (only for items with a registered demo) ———— */}
+      {hasPreview && <LivePreview id={item.id} title={item.title} />}
 
       {/* ———— the artifact: prompt OR downloadable file ———— */}
       {promptText && (

@@ -1,0 +1,137 @@
+You are given a task to add a global page transition to an existing Next.js app.
+
+The codebase should support:
+- Next.js App Router (this does NOT work with the Pages Router)
+- At least 2 routes to navigate between
+- TypeScript + Tailwind (Tailwind optional — the motion itself is pure CSS)
+
+What this does: on every route change, the incoming page slides up from the bottom and
+scales to full over the outgoing page, which stays frozen underneath — so the new page
+feels like it covers the old one instead of a hard reload. It uses the browser's native
+View Transitions API, driven by `next-view-transitions` so it fires on forward AND back
+navigation. Browsers without the API fall back to an instant swap (no broken state).
+
+Determine the default path for components. If it is not /components, adjust the import paths
+below accordingly.
+
+Step 1 — Install the dependency
+```bash
+npm i next-view-transitions
+```
+
+Step 2 — Add the transition CSS to your global stylesheet (app/globals.css)
+```css
+/* ── Slide-up page transition (View Transitions API) ── */
+:root {
+  --page-tx-duration: 1.1s;
+  --page-tx-ease: cubic-bezier(0.22, 1, 0.36, 1); /* soft, overshoot-free settle */
+  --page-tx-scale-from: 0.9; /* 1 = no scale, pure slide */
+}
+
+@keyframes vt-slide-up {
+  from { transform: translateY(100%) scale(var(--page-tx-scale-from, 0.9)); }
+  to   { transform: translateY(0) scale(1); }
+}
+
+::view-transition-old(root) {
+  animation: none;   /* outgoing page stays put as a backdrop (the overlap) */
+  z-index: 1;
+}
+
+::view-transition-new(root) {
+  z-index: 2;
+  transform-origin: 50% 0%;
+  animation: vt-slide-up var(--page-tx-duration, 1.1s)
+    var(--page-tx-ease, cubic-bezier(0.22, 1, 0.36, 1));
+}
+```
+
+Step 3 — Create /components/ScrollResetOnRouteChange.tsx
+The View Transitions API does NOT reset scroll on navigation, so without this the new page
+inherits the previous page's scroll position. Mount this once (see Step 4).
+```tsx
+"use client";
+
+import { useEffect } from "react";
+import { usePathname } from "next/navigation";
+
+/**
+ * The View Transitions API keeps the scroll position across route changes.
+ * This resets the window to the top whenever the pathname changes, so each
+ * incoming page starts at the top as expected.
+ */
+export default function ScrollResetOnRouteChange() {
+  const pathname = usePathname();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+}
+```
+
+Step 4 — Wrap the app in <ViewTransitions> in the root layout (app/layout.tsx)
+```tsx
+import { ViewTransitions } from "next-view-transitions";
+import ScrollResetOnRouteChange from "@/components/ScrollResetOnRouteChange";
+import "./globals.css";
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <ViewTransitions>
+      <html lang="en">
+        <body>
+          <ScrollResetOnRouteChange />
+          {children}
+        </body>
+      </html>
+    </ViewTransitions>
+  );
+}
+```
+
+Step 5 — Navigate using the package's Link (NOT next/link)
+Replace the `next/link` imports on the links you want to trigger the transition:
+```tsx
+import { Link } from "next-view-transitions";
+
+<Link href="/our-booths">Our Booths</Link>; // slides up over the current page
+```
+
+Tune the feel (in :root, from Step 2)
+```css
+:root {
+  --page-tx-duration: 1.1s;                       /* transition length */
+  --page-tx-ease: cubic-bezier(0.22, 1, 0.36, 1); /* easing */
+  --page-tx-scale-from: 0.9;                       /* 1 = pure slide, no scale */
+}
+```
+
+What to ask / check before finishing
+ - Is this an App Router app (app/ directory)? If it's the Pages Router, STOP — this approach
+   does not apply; tell me so.
+ - How many routes are there? You need at least 2 to see the effect.
+ - Are there links built with next/link that should animate? They must be switched to the Link
+   from next-view-transitions (programmatic router.push from the package's useTransitionRouter
+   also works if needed).
+ - Does the project already define ::view-transition-* rules? If so, reconcile them — duplicates
+   will fight each other.
+
+Critical rules — do not violate these or the effect breaks or silently does nothing:
+ - Navigate with `Link` from `next-view-transitions`, NOT `next/link`. Only the package's links
+   (and its router) start a view transition. A plain next/link navigation will just hard-swap.
+ - The app MUST be wrapped in <ViewTransitions> in the ROOT layout. Without it, nothing animates.
+ - KEEP `::view-transition-old(root) { animation: none; z-index: 1 }`. That frozen, lower-z-index
+   old page IS the overlap — it's what makes the new page appear to cover the old one. Remove it
+   and you get the browser's default cross-fade instead.
+ - KEEP `::view-transition-new(root)` with `z-index: 2` and `transform-origin: 50% 0%` — that's
+   what makes the incoming page sit on top and slide/scale up from the top edge.
+ - KEEP ScrollResetOnRouteChange mounted. The API does not reset scroll; without it the new page
+   inherits the old scroll position.
+ - This is progressive enhancement: in browsers without the View Transitions API (e.g. older
+   Firefox) navigation degrades to an instant swap. That's expected — do not try to polyfill it.
